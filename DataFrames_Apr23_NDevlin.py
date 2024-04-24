@@ -9,6 +9,7 @@ from collections import defaultdict
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 
+import os
 import re
 import unittest
 
@@ -32,13 +33,13 @@ class WebScraper():
             self.soup = None
 
     def webPageFromFile(self, fileName):
-        try:
-            with open(fileName, "r") as file:
-                html = file.read()
-                self.soup =  BeautifulSoup(html, "html.parser")
-        except:
-            print("Issue retrieving Web Page")
-            self.soup = None
+        #try:
+        with open(fileName, "r") as file:
+            html = file.read()
+            self.soup =  BeautifulSoup(html, "html.parser")
+        #except:
+            #print("Issue retrieving Web Page")
+            #self.soup = None
 
     def extractTags(self, tagIn):
         if self.soup == None:
@@ -113,6 +114,8 @@ class TestDataFrames(unittest.TestCase):
         
 def main():
     webScraper = WebScraper()
+
+    print(os.getcwd())
 
     webScraper.webPageFromFile("GHGEmissions.html")
 
