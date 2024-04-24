@@ -33,13 +33,13 @@ class WebScraper():
             self.soup = None
 
     def webPageFromFile(self, fileName):
-        #try:
-        with open(fileName, "r") as file:
-            html = file.read()
-            self.soup =  BeautifulSoup(html, "html.parser")
-        #except:
-            #print("Issue retrieving Web Page")
-            #self.soup = None
+        try:
+            with open(fileName, "r") as file:
+                html = file.read()
+                self.soup =  BeautifulSoup(html, "html.parser")
+        except:
+            print("Issue retrieving Web Page")
+            self.soup = None
 
     def extractTags(self, tagIn):
         if self.soup == None:
