@@ -1,9 +1,4 @@
 
-'''
-Nathan Devlin
-TKinter
-April 24th
-'''
 
 from collections import defaultdict
 from urllib.request import urlopen
