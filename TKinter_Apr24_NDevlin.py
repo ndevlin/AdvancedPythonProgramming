@@ -94,30 +94,28 @@ def display_dataframe(df):
     root = tk.Tk()
     root.title("DataFrame Display")
 
-    # Create the tab control
-    tab_control = ttk.Notebook(root)
+    notebook = ttk.Notebook(root)
 
-    # Create the tabs
-    tab1 = ttk.Frame(tab_control)
-    tab2 = ttk.Frame(tab_control)
-    tab3 = ttk.Frame(tab_control)
+    tab1 = ttk.Frame(notebook)
+    tab2 = ttk.Frame(notebook)
+    tab3 = ttk.Frame(notebook)
 
-    # Add the tabs to the tab control
-    tab_control.add(tab1, text='DataFrame')
-    tab_control.add(tab2, text='Headers')
-    tab_control.add(tab3, text='Indices')
+    notebook.add(tab1, text='DataFrame')
+    notebook.add(tab2, text='Headers')
+    notebook.add(tab3, text='Indices')
 
-    # Pack the tab control
-    tab_control.pack(expand=1, fill='both')
+    notebook.pack()
 
-    # Function to create a table in a tab
     def create_table(tab, rows, cols):
         for r in range(rows):
             for c in range(cols):
-                if r == 0:
+                if r == 0: # Headers
                     cell = ttk.Label(tab, text=df.columns[c], wraplength=150)
                 else:
-                    cell = ttk.Label(tab, text=df.iat[r, c] if r < df.shape[0] and c < df.shape[1] else "")
+                    cellText = ""
+                    if r < df.shape[0] and c < df.shape[1]:
+                        cellText = df.iat[r, c]   
+                    cell = ttk.Label(tab, text=cellText)
                 cell.grid(row=r, column=c)
 
     # Create the tables
