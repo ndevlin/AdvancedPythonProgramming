@@ -111,10 +111,13 @@ def display_dataframe(df):
     tab_control.pack(expand=1, fill='both')
 
     # Function to create a table in a tab
-    def create_table(tab, rows, cols):
+    def create_table(tab, rows, cols, headers=True):
         for r in range(rows):
             for c in range(cols):
-                cell = ttk.Label(tab, text=df.iat[r, c] if r < df.shape[0] and c < df.shape[1] else "")
+                if headers and r == 0:
+                    cell = ttk.Label(tab, text=df.columns[c])
+                else:
+                    cell = ttk.Label(tab, text=df.iat[r, c] if r < df.shape[0] and c < df.shape[1] else "")
                 cell.grid(row=r, column=c)
 
     # Create the tables
