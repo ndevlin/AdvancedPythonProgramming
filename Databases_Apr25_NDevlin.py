@@ -19,15 +19,21 @@ class SqliteManager:
             self.conn.close()
             print(f"Disconnected from database: {self.db_name}")
 
-    def query_builder(self, query_type, query_tuple):
-        if query_type.upper() == "INSERT":
-            query_string = f"INSERT INTO my_table VALUES {query_tuple}"
+    def query_builder(self, query_type, table_name, query_tuple=None):
+        if query_type.upper() == "CREATE TABLE":
+            query_string = f"CREATE TABLE IF NOT EXISTS {table_name} {query_tuple}"
+        elif query_type.upper() == "INSERT":
+            query_string = f"INSERT INTO {table_name} VALUES {query_tuple}"
         elif query_type.upper() == "SELECT":
-            query_string = f"SELECT * FROM my_table WHERE {query_tuple}"
-        # Add more query types as needed
+            query_string = f"SELECT * FROM {table_name}"
+        elif query_type.upper() == "WHERE":
+            query_string = f"SELECT * FROM {table_name} WHERE {query_tuple}"
+        elif query_type.upper() == "UPDATE":
+            query_string = f"UPDATE {table_name} SET {query_tuple}"
+        elif query_type.upper() == "DELETE":
+            query_string = f"DELETE FROM {table_name} WHERE {query_tuple}"
         else:
             raise ValueError(f"Unsupported query type: {query_type}")
-        print(f"Built query: {query_string}")
         return query_string
 
     def execute_query(self, query_string):
@@ -53,20 +59,15 @@ def create_sample_database():
     # Create a cursor object
     c = conn.cursor()
 
-    # Drop the table if it already exists
-    c.execute("DROP TABLE IF EXISTS my_table")
-    print("Dropped table 'my_table' if it existed.")
-
-    # Create a new table
+    # Create a table
     c.execute('''
-        CREATE TABLE my_table (
+        CREATE TABLE IF NOT EXISTS my_table (
             id TEXT,
             name TEXT,
             photo TEXT,
             html TEXT
         )
     ''')
-    print("Created new table 'my_table'.")
 
     # Commit the transaction
     conn.commit()
@@ -78,7 +79,26 @@ print("Creating sample database...")
 create_sample_database()
 
 with SqliteManager('my_database.db') as db:
-    query_tuple = ('my_id', 'my_name', 'my_photo', 'my_html')
-    query_string = db.query_builder('INSERT', query_tuple)
-    db.execute_query(query_string)
+    # Test CREATE TABLE
+    create_table_query = db.query_builder('CREATE TABLE', 'new_table', '(id INTEGER, name TEXT)')
+    db.execute_query(create_table_query)
 
+    # Test INSERT
+    insert_query = db.query_builder('INSERT', 'my_table', "('my_id', 'my_name', 'my_photo', 'my_html')")
+    db.execute_query(insert_query)
+
+    # Test SELECT
+    select_query = db.query_builder('SELECT', 'my_table')
+    db.execute_query(select_query)
+
+    # Test WHERE
+    where_query = db.query_builder('WHERE', 'my_table', "id='my_id'")
+    db.execute_query(where_query)
+
+    # Test UPDATE
+    update_query = db.query_builder('UPDATE', 'my_table', "name='new_name' WHERE id='my_id'")
+    db.execute_query(update_query)
+
+    # Test DELETE
+    delete_query = db.query_builder('DELETE', 'my_table', "id='my_id'")
+    db.execute_query(delete_query)
