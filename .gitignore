@@ -17,3 +17,4 @@ soupsieve/__pycache__/css_parser.cpython-38.pyc
 soupsieve/__pycache__/css_types.cpython-38.pyc
 soupsieve/__pycache__/pretty.cpython-38.pyc
 soupsieve/__pycache__/util.cpython-38.pyc
+*.db
