@@ -47,7 +47,7 @@ class WebScraper():
         output = []
 
         for i in range(startAt, len(tagResult)):
-            output.append(str((tagResult)[i].text))
+            output.append(str((tagResult)[i].text).lstrip("#"))
 
         return (tagIn, tuple(output))
 
@@ -114,26 +114,26 @@ webScraper = WebScraper()
 
 webScraper.webPageFromFile("Co2TestVersion.html")
 
-relevantTags = ["tr", "td"]
-
-for tag in relevantTags:
-    tableData = webScraper.extractTags(tag, 9)  # Skip the first 9 tags which are just a heading
-    webScraper.cleanTags(tableData)
+tableData = webScraper.extractTags("td", 2)  # Skip the first 9 tags which are just a heading
+webScraper.cleanTags(tableData)
 
 numCols = 7
-   
+headers = []
+i = 0
+headers = webScraper.memberDict["td"][0:numCols]
+webScraper.memberDict["td"] = webScraper.memberDict["td"][numCols:]
+
+headerTypes = ["INTEGER", "INTEGER", "FLOAT", "FLOAT", "FLOAT", "FLOAT", "INTEGER"]
+tableTupleData = "("
+for header, headerType in zip(headers, headerTypes):
+    tableTupleData += header + " " + headerType + ", "
+tableTupleData = tableTupleData[:-2] + ")"
+
 databaseName = "CIS41b_.db"
-
-# Connect to the SQLite database
-# If the database does not exist, it will be created
-#conn = sqlite3.connect(databaseName)
-# Close the connection
-#conn.close()
-
 
 with SqliteManager(databaseName) as db:
     # Test CREATE TABLE
-    create_table_query = db.query_builder('CREATE TABLE', 'TotalCarbonEmissions', '(year INTEGER, month INTEGER, decimal FLOAT, average FLOAT, interpolated FLOAT, trend FLOAT, days INTEGER)')
+    create_table_query = db.query_builder('CREATE TABLE', 'TotalCarbonEmissions', tableTupleData)
     db.execute_query(create_table_query)
 
     
