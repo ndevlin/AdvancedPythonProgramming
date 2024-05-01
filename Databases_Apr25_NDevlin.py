@@ -61,23 +61,23 @@ class WebScraper():
 class SqliteManager:
     def __init__(self, db_name):
         self.db_name = db_name
-        self.conn = None
+        self.connection = None
         self.cursor = None
 
     def connect(self):
         try:
-            self.conn = sqlite3.connect(self.db_name)
-            self.cursor = self.conn.cursor()
+            self.connection = sqlite3.connect(self.db_name)
+            self.cursor = self.connection.cursor()
             print(f"Connected to database: {self.db_name}")
         except sqlite3.Error as e:
             print(f"An error occurred: {e}")
 
     def disconnect(self):
-        if self.conn:
-            self.conn.close()
+        if self.connection:
+            self.connection.close()
             print(f"Disconnected from database: {self.db_name}")
 
-    def query_builder(self, query_type, table_name, query_tuple=None):
+    def queryBuilder(self, query_type, table_name, query_tuple=None):
         if query_type.upper() == "CREATE TABLE":
             query_string = f"CREATE TABLE IF NOT EXISTS {table_name} {query_tuple}"
         elif query_type.upper() == "INSERT":
@@ -94,10 +94,10 @@ class SqliteManager:
             raise ValueError(f"Unsupported query type: {query_type}")
         return query_string
 
-    def execute_query(self, query_string):
+    def executeQuery(self, query_string):
         try:
             self.cursor.execute(query_string)
-            self.conn.commit()
+            self.connection.commit()
             print(f"Executed query: {query_string}")
             if query_string.split()[0].upper() == "SELECT" or query_string.split()[0].upper() == "WHERE":
                 return self.cursor.fetchall()
@@ -137,31 +137,31 @@ databaseName = "CIS41b_.db"
 
 with SqliteManager(databaseName) as db:
     # Test CREATE TABLE
-    create_table_query = db.query_builder('CREATE TABLE', 'TotalCarbonEmissions', tableTupleData)
-    db.execute_query(create_table_query)
+    create_table_query = db.queryBuilder('CREATE TABLE', 'TotalCarbonEmissions', tableTupleData)
+    db.executeQuery(create_table_query)
 
     listOfRows = []
     for i in range(0, len(webScraper.memberDict["td"]), numCols):
         listOfRows.append(webScraper.memberDict["td"][i:i+numCols])
     # INSERT
     for row in listOfRows:
-        insert_query = db.query_builder('INSERT', 'TotalCarbonEmissions', row)
-        db.execute_query(insert_query)
+        insert_query = db.queryBuilder('INSERT', 'TotalCarbonEmissions', row)
+        db.executeQuery(insert_query)
 
     # Test SELECT
-    select_query = db.query_builder('SELECT', 'TotalCarbonEmissions')
-    db.execute_query(select_query)
+    select_query = db.queryBuilder('SELECT', 'TotalCarbonEmissions')
+    db.executeQuery(select_query)
 
     # Test WHERE
-    where_query = db.query_builder('WHERE', 'TotalCarbonEmissions', "year='1959'")
-    db.execute_query(where_query)
+    where_query = db.queryBuilder('WHERE', 'TotalCarbonEmissions', "year='1959'")
+    db.executeQuery(where_query)
 
     # Test UPDATE
-    update_query = db.query_builder('UPDATE', 'TotalCarbonEmissions', "year='1958' WHERE year='1959'")
-    db.execute_query(update_query)
+    update_query = db.queryBuilder('UPDATE', 'TotalCarbonEmissions', "year='1958' WHERE year='1959'")
+    db.executeQuery(update_query)
 
     # Test DELETE
-    delete_query = db.query_builder('DELETE', 'TotalCarbonEmissions', "year='1960'")
-    db.execute_query(delete_query)
+    delete_query = db.queryBuilder('DELETE', 'TotalCarbonEmissions', "year='1960'")
+    db.executeQuery(delete_query)
 
 
