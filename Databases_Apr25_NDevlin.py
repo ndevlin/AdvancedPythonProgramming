@@ -99,6 +99,8 @@ class SqliteManager:
             self.cursor.execute(query_string)
             self.conn.commit()
             print(f"Executed query: {query_string}")
+            if query_string.split()[0].upper() == "SELECT" or query_string.split()[0].upper() == "WHERE":
+                return self.cursor.fetchall()
         except sqlite3.Error as e:
             print(f"An error occurred: {e}")
 
@@ -110,11 +112,13 @@ class SqliteManager:
         self.disconnect()
 
 #Main
+
+# Scrape Co2.html to get the data to put in the database
 webScraper = WebScraper()
 
-webScraper.webPageFromFile("Co2TestVersion.html")
+webScraper.webPageFromFile("Co2.html")
 
-tableData = webScraper.extractTags("td", 2)  # Skip the first 9 tags which are just a heading
+tableData = webScraper.extractTags("td", 2)  # Skip the first 2 tags which are just a heading
 webScraper.cleanTags(tableData)
 
 numCols = 7
@@ -136,7 +140,6 @@ with SqliteManager(databaseName) as db:
     create_table_query = db.query_builder('CREATE TABLE', 'TotalCarbonEmissions', tableTupleData)
     db.execute_query(create_table_query)
 
-    
     listOfRows = []
     for i in range(0, len(webScraper.memberDict["td"]), numCols):
         listOfRows.append(webScraper.memberDict["td"][i:i+numCols])
