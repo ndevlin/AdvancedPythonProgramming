@@ -1,14 +1,14 @@
+
+"""
+Nathan Devlin
+April 25th 2024
+Databases
+"""
+
 import sqlite3
 from collections import defaultdict
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
-
-import os
-import re
-import unittest
-
-import numpy as np
-import pandas as pd
 
 class WebScraper():
 
@@ -57,26 +57,6 @@ class WebScraper():
     def getData(self):
         return self.memberDict.items()
     
-    def convertToTable(self):
-        if self.memberDict == defaultdict(list):
-            print("Must Clean Tags before converting to Pandas DataFrame")
-            return
-        
-        headers = self.memberDict["tr"][0]
-        numRows = int(re.search(r'\n(\d+)\n', self.memberDict["tr"][-1]).group(1))
-        headers = headers.split("\n")
-        while "" in headers:
-            headers.remove("")
-        numCols = len(headers)
-        pandaReadyList = []
-        for i in range(numRows):
-            row = []
-            for j in range(numCols):
-                currVal = i * numCols + j
-                row.append(self.memberDict["td"][currVal])
-            pandaReadyList.append(row)
-        self.dataFrame = pd.DataFrame(pandaReadyList, columns = headers)
-
 
 class SqliteManager:
     def __init__(self, db_name):
@@ -129,34 +109,7 @@ class SqliteManager:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.disconnect()
 
-def create_sample_database(databaseName='my_database.db'):
-    
-    # Connect to the SQLite database
-    # If the database does not exist, it will be created
-    conn = sqlite3.connect(databaseName)
-
-    # Create a cursor object
-    c = conn.cursor()
-
-    # Create a table
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS my_table (
-            id TEXT,
-            name TEXT,
-            photo TEXT,
-            html TEXT
-        )
-    ''')
-
-    # Commit the transaction
-    conn.commit()
-
-    # Close the connection
-    conn.close()
-
-
 #Main
-
 webScraper = WebScraper()
 
 webScraper.webPageFromFile("Co2TestVersion.html")
@@ -168,28 +121,17 @@ for tag in relevantTags:
     webScraper.cleanTags(tableData)
 
 numCols = 7
-    
-
-#print("Creating sample database...")
-#create_sample_database("my_database.db")
-
-databaseName = "my_database.db"
+   
+databaseName = "CIS41b_.db"
 
 # Connect to the SQLite database
 # If the database does not exist, it will be created
-conn = sqlite3.connect(databaseName)
-
-# Create a cursor object
-c = conn.cursor()
-
-# Commit the transaction
-conn.commit()
-
+#conn = sqlite3.connect(databaseName)
 # Close the connection
-conn.close()
+#conn.close()
 
 
-with SqliteManager('my_database.db') as db:
+with SqliteManager(databaseName) as db:
     # Test CREATE TABLE
     create_table_query = db.query_builder('CREATE TABLE', 'TotalCarbonEmissions', '(year INTEGER, month INTEGER, decimal FLOAT, average FLOAT, interpolated FLOAT, trend FLOAT, days INTEGER)')
     db.execute_query(create_table_query)
@@ -218,4 +160,5 @@ with SqliteManager('my_database.db') as db:
     # Test DELETE
     delete_query = db.query_builder('DELETE', 'TotalCarbonEmissions', "year='1960'")
     db.execute_query(delete_query)
+
 
