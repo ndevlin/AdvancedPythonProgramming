@@ -228,7 +228,7 @@ class WebScraper():
         print(self.dataFrame)
 
         
-# New Code
+# DataFrames Code
 webScraper = WebScraper()
 
 webScraper.webPageFromFile("GHGEmissions.html")
@@ -259,5 +259,48 @@ averageEmissionsDataFrame = averageEmissions.reset_index()
 averageEmissionsDataFrame.columns = ['Country', 'Average Agriculture Emissions']
 
 print(averageEmissionsDataFrame)
+
+
+
+
+
+# 
+
+import tkinter as tk
+from tkinter import ttk
+
+'''
+TKinter GUI to display the DataFrame
+'''
+def display_dataframe(df):
+    window = tk.Tk()
+    window.title("DataFrame Display")
+
+    notebook = ttk.Notebook(window)
+
+    tab1 = ttk.Frame(notebook)
+
+    notebook.add(tab1, text='Average Agriculture Emissions by Country')
+
+    notebook.pack()
+
+    def create_table(tab, rows, cols):
+        for r in range(rows):
+            for c in range(cols):
+                if r == 0: # Headers
+                    cell = ttk.Label(tab, text=df.columns[c], wraplength=200)
+                else:
+                    cellText = df.iloc[r, c]   
+                    cell = ttk.Label(tab, text=cellText)
+                cell.grid(row=r, column=c)
+
+    create_table(tab1, df.shape[0], df.shape[1])  # DataFrame
+
+    window.mainloop()
+
+# Main Code
+display_dataframe(averageEmissionsDataFrame)
+
+
 
 
