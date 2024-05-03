@@ -264,6 +264,8 @@ print(averageEmissionsDataFrame)
 
 
 
+
+
 # 
 
 import tkinter as tk
@@ -300,8 +302,7 @@ def display_dataframe(df, title):
 
 # Main Code
 title = "Average Agriculture Emissions by Country"
+print(title)
+print(averageEmissionsDataFrame)
 display_dataframe(averageEmissionsDataFrame, title)
-
-
-
 
