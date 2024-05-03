@@ -272,7 +272,7 @@ from tkinter import ttk
 '''
 TKinter GUI to display the DataFrame
 '''
-def display_dataframe(df):
+def display_dataframe(df, title):
     window = tk.Tk()
     window.title("DataFrame Display")
 
@@ -280,7 +280,7 @@ def display_dataframe(df):
 
     tab1 = ttk.Frame(notebook)
 
-    notebook.add(tab1, text='Average Agriculture Emissions by Country')
+    notebook.add(tab1, text=title)
 
     notebook.pack()
 
@@ -299,7 +299,8 @@ def display_dataframe(df):
     window.mainloop()
 
 # Main Code
-display_dataframe(averageEmissionsDataFrame)
+title = "Average Agriculture Emissions by Country"
+display_dataframe(averageEmissionsDataFrame, title)
 
 
 
