@@ -52,6 +52,16 @@ class Rotor:
 
     def __str__(self):
         return chr(self.position)
+    
+    def __eq__(self, other):
+        if isinstance(other, Rotor):
+            return self.position == other.position and \
+            self.asciiBegin == other.asciiBegin and \
+            self.asciiEnd == other.asciiEnd and \
+            self.initialPosition == other.initialPosition and \
+            self.position == other.position and \
+            self.incrementAmount == other.incrementAmount
+        return False
 
 
 class Decryption:
@@ -63,15 +73,18 @@ class Decryption:
         self.caesarCypher()
 
     def caesarCypher(self):
+        self.encrypted = ""
         for char in self.text:
             self.encrypted += self.rotor.rotate(char)
         return self.encrypted
 
     def decryptCaesarCypher(self):
+        self.decrypted = ""
         self.rotor.reset()
         for char in self.encrypted:
             self.decrypted += self.rotor.reverseRotate(char)
         return self.decrypted
+
 
 # Main
 
