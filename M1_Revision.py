@@ -6,138 +6,99 @@ Mid 1 Q
 
 class Decryption:
 
-    def __init__(self, shift):
+    def __init__(self, shift=1, text="", asciiBegin = 0x20, asciiEnd = 0x80):
         self.shift = shift
+        self.text = text
+        self.encrypted = ""
+        self.decrypted = ""
+        self.asciiBegin = asciiBegin
+        self.asciiEnd = asciiEnd
+        self.caesarCypher()
 
-    def caesarCypher(self, inputString):
-        outputString = ""
-        shift = self.shift
-        for char in inputString:
+    def caesarCypher(self):
+        currShift = self.shift
+        for char in self.text:
             asciiVal = ord(char)
-            newAsciiVal = asciiVal + shift
-            if newAsciiVal > 0x80:
-                newAsciiVal = newAsciiVal - 0x80 + 0x20 - 1
-            outputString += chr(newAsciiVal)
-            shift += 1
-        return outputString
+            newAsciiVal = asciiVal + currShift
+            if newAsciiVal > self.asciiEnd:
+                newAsciiVal = newAsciiVal - self.asciiEnd + self.asciiBegin - 1
+            self.encrypted += chr(newAsciiVal)
+            currShift += 1
+        return self.encrypted
 
-    def decryptCaesarCypher(self, inputString):
-        outputString = ""
-        shift = self.shift
-        for char in inputString:
+    def decryptCaesarCypher(self):
+        currShift = self.shift
+        for char in self.encrypted:
             asciiVal = ord(char)
-            newAsciiVal = asciiVal - shift
-            if newAsciiVal < 0x20:
-                newAsciiVal = newAsciiVal + 0x80 - 0x20 + 1
-            outputString += chr(newAsciiVal)
-            shift += 1
-        return outputString
+            newAsciiVal = asciiVal - currShift
+            if newAsciiVal < self.asciiBegin:
+                newAsciiVal = newAsciiVal + self.asciiEnd - self.asciiBegin + 1
+            self.decrypted += chr(newAsciiVal)
+            currShift += 1
+        return self.decrypted
 
+    def __len__(self):
+        return len(self.encrypted)
+    
+    def __str__(self):
+        if self.encrypted == "":
+            print("No encrypted string found")
+            return
+        return self.encrypted
+    
+    def __getitem__(self, index):
+        if self.encrypted == "":
+            print("No encrypted string found")
+            return
+        return self.encrypted[index]
+    
+    def __iter__(self):
+        if self.encrypted == "":
+            print("No encrypted string found")
+            return
+        for char in self.encrypted:
+            yield char
+    
+    '''
+    Since the class is called Decryption, it seems appropriate that 
+    __call__ should call the decrypt function
+    '''
+    def __call__(self, textIn=""):
+        textToDecrypt = textIn
+        if textIn == "":
+            textToDecrypt = self.encrypted
+        return self.decryptCaesarCypher()
+    
+    def __int__(self):
+        return self.shift
+    
+
+    def __eq__(self, other):
+        return (self.encrypted == other.encrypted)
+    
 
 # Main
 
-stringToEncrypt = "HELLO"
-
-decrypter = Decryption(shift=5)
+stringToEncrypt = "Hello World"
 
 print("Encrypt", stringToEncrypt)
-encryptedString = decrypter.caesarCypher(stringToEncrypt)
-print(encryptedString)
+decrypter = Decryption(5, stringToEncrypt)
+print("Encrypted:", decrypter)
 
-print("Decrypt ", encryptedString)
-decryptedString = decrypter.decryptCaesarCypher(encryptedString)
-print(decryptedString)
-
-
-
-import sqlite3
-import unittest
-
-class SqliteManager:
-    def __init__(self, db_name):
-        self.db_name = db_name
-        self.connection = None
-        self.cursor = None
-
-    def connect(self):
-        try:
-            self.connection = sqlite3.connect(self.db_name)
-            self.cursor = self.connection.cursor()
-            print(f"Connected to database: {self.db_name}")
-        except sqlite3.Error as e:
-            print(f"An error occurred: {e}")
-
-    def disconnect(self):
-        if self.connection:
-            self.connection.close()
-            print(f"Disconnected from database: {self.db_name}")
-
-    def queryBuilder(self, query_type, table_name, query_tuple=None):
-        if query_type.upper() == "CREATE TABLE":
-            query_string = f"CREATE TABLE IF NOT EXISTS {table_name} {query_tuple}"
-        elif query_type.upper() == "INSERT":
-            query_string = f"INSERT INTO {table_name} VALUES {query_tuple}"
-        elif query_type.upper() == "SELECT":
-            query_string = f"SELECT * FROM {table_name}"
-        elif query_type.upper() == "WHERE":
-            query_string = f"SELECT * FROM {table_name} WHERE {query_tuple}"
-        elif query_type.upper() == "UPDATE":
-            query_string = f"UPDATE {table_name} SET {query_tuple}"
-        elif query_type.upper() == "DELETE":
-            query_string = f"DELETE FROM {table_name} WHERE {query_tuple}"
-        else:
-            raise ValueError(f"Unsupported query type: {query_type}")
-        return query_string
-
-    def executeQuery(self, query_string):
-        try:
-            self.cursor.execute(query_string)
-            self.connection.commit()
-            print(f"Executed query: {query_string}")
-            if query_string.split()[0].upper() == "SELECT" or query_string.split()[0].upper() == "WHERE":
-                return self.cursor.fetchall()
-        except sqlite3.Error as e:
-            print(f"An error occurred: {e}")
-
-    def __enter__(self):
-        self.connect()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.disconnect()
+print("Decrypt", decrypter)
+decryptedString = decrypter()
+print("Decrypted:", decryptedString)
 
 
-class TestDecryption(unittest.TestCase):
+stringToEncrypt2 = "HELLO WORLD"
 
-    def testEncryptionDecryption(self):
+print("Encrypt", stringToEncrypt2)
+decrypter2 = Decryption(5, stringToEncrypt2)
+print("Encrypted:", decrypter2)
 
-        databaseName = "Mid1.db"
+print("Decrypt", decrypter2)
+decryptedString2 = decrypter2()
+print("Decrypted:", decryptedString2)
 
-        with SqliteManager(databaseName) as db:
+print(f"{decrypter == decrypter2 = }")
 
-            tableTupleData = "(Text1 TEXT, Text2 TEXT)"
-
-            # CREATE TABLE
-            createTableQuery = db.queryBuilder('CREATE TABLE', 'TextTable', tableTupleData)
-            db.executeQuery(createTableQuery)
-
-            textToInsert = ("Hello", "World")
-            insertQuery = db.queryBuilder('INSERT', 'TextTable', textToInsert)
-            db.executeQuery(insertQuery)
-
-            print(f"{insertQuery = }")
-            print()
-
-            decrypter = Decryption(shift=3)
-            originalString = insertQuery
-            print(f"{originalString = }")
-            encryptedString = decrypter.caesarCypher(originalString)
-            print(f"{encryptedString = }")
-            decryptedString = decrypter.decryptCaesarCypher(encryptedString)
-            print(f"{decryptedString = }")
-            self.assertEqual(originalString, decryptedString)
-            print("originalString == decryptedString?" , originalString == decryptedString)
-
-
-if __name__ == '__main__':
-    unittest.main()
