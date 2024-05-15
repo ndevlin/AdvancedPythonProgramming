@@ -6,17 +6,14 @@ May 10th 2024
 '''
 
 from collections import defaultdict
-from urllib.request import urlopen
-from bs4 import BeautifulSoup
-
+from io import StringIO
 import re
 import unittest
-
 import numpy as np
-
 import pandas as pd
-
 import csv
+import tkinter as tk
+from tkinter import ttk
 
 class WebScraper():
 
@@ -54,16 +51,52 @@ class WebScraper():
         return self.memberDict.items()
 
 
-webScraper = WebScraper()
+class TestWebScraper(unittest.TestCase):
+    def setUp(self):
+        self.webScraper = WebScraper()
 
-webScraper.parseCSVtoDict("Dwarfs.csv")
+    def test_parseCSVtoDict_convertToPandasDataFrame(self):
+        self.webScraper.parseCSVtoDict("Dwarfs.csv")
+        self.webScraper.convertToPandasDataFrame()
+        jsonCSV = self.webScraper.getDataFrame().to_json()
+        expected_output = (
+            '{"Dwarf":{"0":"Ceres","1":"Pluto","2":"Haumea","3":"Makemake","4":"Eris",'
+            '"5":"Orcus","6":"2003AZ84","7":"Ixion","8":"90568","9":"55636","10":"Quaoar",'
+            '"11":"55565","12":"Sedna"},"Distance(AU)":{"0":"2.77","1":"39.5","2":"43.19",'
+            '"3":"45.48","4":"67.84","5":"39.22","6":"39.36","7":"39.70","8":"42.10",'
+            '"9":"43.28","10":"43.12","11":"47.12","12":"488.98"},"Period(years)":'
+            '{"0":"980","1":"2370","2":"283.84","3":"306.17","4":"558.77","5":"246.94",'
+            '"6":"246.94","7":"250.18","8":"2273.13","9":"284.69","10":"287.97",'
+            '"11":"323.49","12":"10812.82"}}'
+        )        
+        self.assertEqual(jsonCSV, expected_output)
 
-print(webScraper.getData())
+# Main
+def main():    
+    webScraper = WebScraper()
 
-webScraper.convertToPandasDataFrame()
-webScraper.printDataFrame()
+    webScraper.parseCSVtoDict("Dwarfs.csv")
 
-jsonCSV = webScraper.getDataFrame().to_json()
+    print(f"{webScraper.getData() = }", "\n")
 
-print(jsonCSV)
-        
+    webScraper.convertToPandasDataFrame()
+
+    print("webScraper.dataFrame:")
+    webScraper.printDataFrame()
+
+    print()
+
+    jsonCSV = webScraper.getDataFrame().to_json()
+
+    print(f"{jsonCSV = }", "\n")
+
+    backToDataFrame = pd.read_json(StringIO(jsonCSV))
+
+    print(backToDataFrame, "\n")
+
+    unittest.main()
+
+
+if __name__ == '__main__':
+    main()
+
