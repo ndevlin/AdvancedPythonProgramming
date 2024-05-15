@@ -94,8 +94,24 @@ def main():
 
     print(backToDataFrame, "\n")
 
-    unittest.main()
+    '''
+    # TKinter GUI to display the DataFrame
+    window = tk.Tk()
+    window.title("DataFrame Display")
 
+    for r in range(len(backToDataFrame)+1):  # adding 1 to account for column headers
+        for c in range(len(backToDataFrame.columns)):
+            if r == 0:  # Headers
+                cell = ttk.Label(window, text=backToDataFrame.columns[c], wraplength=200)
+            else:
+                cellText = backToDataFrame.iloc[r-1, c]  # subtracting 1 from row index to account for headers
+                cell = ttk.Label(window, text=cellText)
+            cell.grid(row=r, column=c)
+
+    window.mainloop()
+    '''
+
+    unittest.main()
 
 if __name__ == '__main__':
     main()
