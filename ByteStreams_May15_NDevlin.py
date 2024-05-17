@@ -1,6 +1,12 @@
-import unittest
-import socket
+
+'''
+ByteStream class that can be used to convert between strings, bytes, bytearrays, and bitstrings.
+May 17, 2024
+'''
+
 import bitstring
+import socket
+import unittest
 
 class ByteStream:
     def __init__(self, data, isBinary=False):
@@ -86,37 +92,9 @@ class ByteStream:
             conn.close()
     
 
-
-    # Probably wont use:
-    def send(self, host, port):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((host, port))
-            s.sendall(self._bytes)
-
-    def receive(self, host, port):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.bind((host, port))
-            s.listen()
-
-            # Set a timeout
-            s.settimeout(2.0)
-
-            try:
-                conn, addr = s.accept()
-                with conn:
-                    data = conn.recv(1024)
-                    self._bytes = data
-                    self._bytearray = bytearray(data)
-                    self._bitstring = bitstring.BitArray(bytes=data)
-                    self._string = None
-            except socket.timeout:
-                print("Socket timed out")
-    
-
 class TestByteStream(unittest.TestCase):
     def setUp(self):
         self.converter = ByteStream("Hello, World!")
-        print("\nSetup: Created ByteStream with string 'Hello, World!'")
 
     def test_byte_conversion(self):
         byte = self.converter.get_bytes()
@@ -181,46 +159,7 @@ class TestByteStream(unittest.TestCase):
                 self.assertEqual(data, self.converter.get_bytes())
                 print("Passed receive byte stream test")
 
-    
-    # Probably wont use:
-    '''
-    def test_send_and_receive(self):
-
-        import threading
-
-        # Create an Event to signal when the server has started
-        server_started = threading.Event()
-
-        # Start a server in a separate thread
-        server_thread = threading.Thread(target=self.start_server, args=(server_started,))
-        server_thread.start()
-
-        # Wait for the server to start
-        server_started.wait()
-
-        # Send data
-        self.converter.send('127.0.0.1', 12345)
-
-        # Wait for the server to finish
-        server_thread.join()
-
-    def start_server(self, server_started):
-    # Create a new ByteStream object to receive data
-        receiver = ByteStream(b'', isBinary=True)
-
-        try:
-            # Start listening for connections
-            receiver.receive('127.0.0.1', 12345)
-
-            # Signal that the server has started
-            server_started.set()
-
-            # Check that the received data matches the sent data
-            self.assertEqual(receiver.get_byte(), self.converter.get_byte())
-        finally:
-            # Close the server socket
-            receiver.close()
-    '''
-
-unittest.main()
+# Main
+if __name__ == "__main__":
+    unittest.main()
     
