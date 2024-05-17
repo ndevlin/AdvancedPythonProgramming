@@ -55,6 +55,18 @@ class ByteStream:
 
     def __contains__(self, item):
         return item in self._bytearray
+    
+    def set_string(self, value):
+        self._bytes = value.encode()
+        self._bytearray = bytearray(self._bytes)
+        self._bitstring = bitstring.BitArray(self._bytes)
+        self._string = value
+    
+    def get_string(self):
+        if self._string is not None:
+            return self._string
+        else:
+            return self._bytes.decode()
 
     def get_bytes(self):
         return self._bytes
@@ -96,6 +108,19 @@ class TestByteStream(unittest.TestCase):
     def setUp(self):
         self.converter = ByteStream("Hello, World!")
 
+    def test_get_string(self):
+        self.assertEqual(self.converter.get_string(), "Hello, World!")
+
+    def test_get_bytes(self):
+        self.assertEqual(self.converter.get_bytes(), b"Hello, World!")
+
+    def test_get_bytearray(self):
+        self.assertEqual(self.converter.get_bytearray(), bytearray(b"Hello, World!"))
+
+    def test_get_bitstring(self):
+        self.converter.set_string('A')
+        self.assertEqual(self.converter.get_bitstring(), '01000001')
+        
     def test_byte_conversion(self):
         byte = self.converter.get_bytes()
         print(f"Testing byte conversion: {byte}")
