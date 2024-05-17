@@ -1,4 +1,3 @@
-import binascii
 import unittest
 import socket
 import bitstring
@@ -6,74 +5,80 @@ import bitstring
 class ByteStream:
     def __init__(self, data, isBinary=False):
         if data is None:
-            self._byte = b''
-            self._byte_array = bytearray()
+            self._bytes = b''
+            self._bytearray = bytearray()
             self._bitstring = bitstring.BitArray()
             self._string = None
         elif isBinary:
-            self._byte = data
-            self._byte_array = bytearray(data)
+            self._bytes = data
+            self._bytearray = bytearray(data)
             self._bitstring = bitstring.BitArray(bytes=data)
             self._string = None
         else:
             self._string = data
-            self._byte = self._string.encode()
-            self._byte_array = bytearray(self._string, 'utf-8')
-            self._bitstring = bitstring.BitArray(bytes=self._byte)
+            self._bytes = self._string.encode()
+            self._bytearray = bytearray(self._string, 'utf-8')
+            self._bitstring = bitstring.BitArray(bytes=self._bytes)
 
     def __str__(self):
-        return self._string if self._string else self._byte.decode()
+        if self._string:
+            return self._string 
+        else: 
+            return self._bytes.decode()
 
     def __iter__(self):
-        return iter(self._string) if self._string else iter(self._byte)
+        if self._string:
+            return iter(self._string) 
+        else:
+            return iter(self._bytes)
 
     def __len__(self):
-        return len(self._byte_array)
+        return len(self._bytearray)
 
     def __getitem__(self, index):
-        return self._byte_array[index]
+        return self._bytearray[index]
 
     def __setitem__(self, index, value):
-        self._byte_array[index] = value
-        self._byte = bytes(self._byte_array)
-        self._bitstring = bin(int(binascii.hexlify(self._byte), 16))
+        self._bytearray[index] = value
+        self._bytes = bytes(self._bytearray)
+        self._bitstring = bitstring.BitArray(self._bytes)
         try:
-            self._string = self._byte.decode()
+            self._string = self._bytes.decode()
         except:
-            print("Decode error")
+            print("string not converted")
 
     def __contains__(self, item):
-        return item in self._byte_array
+        return item in self._bytearray
 
-    def get_byte(self):
-        return self._byte
+    def get_bytes(self):
+        return self._bytes
 
-    def get_byte_array(self):
-        return self._byte_array
+    def get_bytearray(self):
+        return self._bytearray
 
     def get_bitstring(self):
         return self._bitstring.bin
 
-    def byte_to_string(self):
-        return self._byte.decode()
+    def get_bytesToString(self):
+        return self._bytes.decode()
 
-    def byte_array_to_string(self):
-        return bytes(self._byte_array).decode()
+    def get_bytearrayToString(self):
+        return bytes(self._bytearray).decode()
 
-    def bitstring_to_string(self):
+    def get_bitstringToString(self):
         return self._bitstring.bytes.decode()
 
-    def bitstring_to_byte(self):
+    def get_bitstringTobytes(self):
         return self._bitstring.bytes
 
-    def send_byte_stream(self, byte_stream, socket):
+    def send_bytestream(self, bytestream, socket):
         conn, _ = socket.accept()
         try:
-            conn.sendall(byte_stream)
+            conn.sendall(bytestream)
         finally:
             conn.close()
 
-    def receive_byte_stream(self, socket):
+    def receive_bytestream(self, socket):
         conn, _ = socket.accept()
         try:
             return conn.recv(1024)
@@ -86,7 +91,7 @@ class ByteStream:
     def send(self, host, port):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((host, port))
-            s.sendall(self._byte)
+            s.sendall(self._bytes)
 
     def receive(self, host, port):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -100,8 +105,8 @@ class ByteStream:
                 conn, addr = s.accept()
                 with conn:
                     data = conn.recv(1024)
-                    self._byte = data
-                    self._byte_array = bytearray(data)
+                    self._bytes = data
+                    self._bytearray = bytearray(data)
                     self._bitstring = bitstring.BitArray(bytes=data)
                     self._string = None
             except socket.timeout:
@@ -114,15 +119,15 @@ class TestByteStream(unittest.TestCase):
         print("\nSetup: Created ByteStream with string 'Hello, World!'")
 
     def test_byte_conversion(self):
-        byte = self.converter.get_byte()
+        byte = self.converter.get_bytes()
         print(f"Testing byte conversion: {byte}")
-        self.assertEqual(self.converter.byte_to_string(), "Hello, World!")
+        self.assertEqual(self.converter.get_bytesToString(), "Hello, World!")
         print("Passed byte conversion test")
 
     def test_bitstring_conversion(self):
         bitstring = self.converter.get_bitstring()
         print(f"Testing bitstring conversion: {bitstring}")
-        self.assertEqual(self.converter.bitstring_to_byte(), self.converter.get_byte())
+        self.assertEqual(self.converter.get_bitstringTobytes(), self.converter.get_bytes())
         print("Passed bitstring conversion test")
 
     def test_len(self):
@@ -158,9 +163,9 @@ class TestByteStream(unittest.TestCase):
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as clientSocket:
                 clientSocket.connect(('localhost', port))
                 print("Testing send byte stream: Sending byte stream")
-                self.converter.send_byte_stream(self.converter.get_byte(), s)
+                self.converter.send_bytestream(self.converter.get_bytes(), s)
                 data = clientSocket.recv(1024)
-                self.assertEqual(data, self.converter.get_byte())
+                self.assertEqual(data, self.converter.get_bytes())
                 print("Passed send byte stream test")
 
     def test_receive_byte_stream(self):
@@ -170,10 +175,10 @@ class TestByteStream(unittest.TestCase):
             _, port = s.getsockname()
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as clientSocket:
                 clientSocket.connect(('localhost', port))
-                clientSocket.sendall(self.converter.get_byte())
+                clientSocket.sendall(self.converter.get_bytes())
                 print("Testing receive byte stream: Receiving byte stream")
-                data = self.converter.receive_byte_stream(s)
-                self.assertEqual(data, self.converter.get_byte())
+                data = self.converter.receive_bytestream(s)
+                self.assertEqual(data, self.converter.get_bytes())
                 print("Passed receive byte stream test")
 
     
