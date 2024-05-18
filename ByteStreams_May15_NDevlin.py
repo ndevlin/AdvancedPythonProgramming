@@ -61,6 +61,7 @@ class ByteStream:
         self._bytearray = bytearray(self._bytes)
         self._bitstring = bitstring.BitArray(self._bytes)
         self._string = value
+        return self._bytes
     
     def get_string(self):
         if self._string is not None:
