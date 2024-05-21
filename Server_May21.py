@@ -4,12 +4,16 @@ from ByteStreams_May15_NDevlin import ByteStream
 from Databases_Refactor_May17 import SqliteManager
 
 class Server:
-    def __init__(self, db_name):
+    def __init__(self, mode="text", db_name="Database.db"):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.bind(('localhost', 12346))
-        self.db = SqliteManager(db_name)
+        self.mode = mode
+        if mode == "text":
+            self.db = SqliteManager(db_name)
+            self.db.executeQuery('CREATE TABLE IF NOT EXISTS Database (id INTEGER PRIMARY KEY, name TEXT)')
+            self.db.executeQuery("INSERT INTO Database (name) VALUES ('Alice'), ('Bob')")
 
-    def start(self):
+    def startText(self):
         self.sock.listen(1)
         print("Starting server...")
         while True:
@@ -30,13 +34,40 @@ class Server:
                 conn.sendall(byte_stream.get_bytes())
             conn.close()
 
+    def startInteractive(self):
+        self.sock.listen(1)
+        print("Starting chat...")
+        print("Waiting for connection...")
+        conn, addr = self.sock.accept()
+        try:
+            while True:
+                data = conn.recv(1024)
+                print(f"Received data: {data}")
+                if data:
+                    response = data.decode('utf-8')
+                    print(f"Client: {response}")
+
+                    print("Server: ")
+                    userInput = input()
+                    byte_stream = ByteStream(data=userInput, isBinary=False)
+                    conn.sendall(byte_stream.get_bytes())
+        except:
+            conn.close()
+
     def processQuery(self, query):
         result = self.db.executeQuery(query)
         return result
 
 if __name__ == '__main__':
-    db = SqliteManager('Database.db')
-    db.executeQuery('CREATE TABLE IF NOT EXISTS Database (id INTEGER PRIMARY KEY, name TEXT)')
-    db.executeQuery("INSERT INTO Database (name) VALUES ('Alice'), ('Bob')")
-    server = Server('Database.db')
-    server.start()
+
+    # interactionMode should be set to "interactive", "text", or "binary"
+    interactionMode = "interactive"
+
+    if interactionMode == "interactive":
+        server = Server("interactive")
+        server.startInteractive()
+
+
+    if interactionMode == "text":
+        server = Server("text", "Database.db")
+        server.startText()
