@@ -4,11 +4,11 @@ from ByteStreams_May15_NDevlin import ByteStream
 from Databases_Refactor_May17 import SqliteManager
 
 class Server:
-    def __init__(self, mode="text", db_name="Database.db"):
+    def __init__(self, mode="test", db_name="Database.db"):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.bind(('localhost', 12346))
+        self.sock.bind(('localhost', 12345))
         self.mode = mode
-        if mode == "text":
+        if mode == "test":
             self.db = SqliteManager(db_name)
             self.db.executeQuery('CREATE TABLE IF NOT EXISTS Database (id INTEGER PRIMARY KEY, name TEXT)')
             self.db.executeQuery("INSERT INTO Database (name) VALUES ('Alice'), ('Bob')")
@@ -65,14 +65,14 @@ class Server:
 
 if __name__ == '__main__':
 
-    # interactionMode should be set to "interactive", "text", or "binary"
-    interactionMode = "interactive"
+    # interactionMode should be set to "interactive" or "test"
+    interactionMode = "test"
 
     if interactionMode == "interactive":
         server = Server("interactive")
         server.startInteractive()
 
 
-    if interactionMode == "text":
-        server = Server("text", "Database.db")
+    if interactionMode == "test":
+        server = Server("test", "Database.db")
         server.startText()

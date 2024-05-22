@@ -9,6 +9,10 @@ class Client:
     def __init__(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connected = False
+    
+    def connect(self):
+        self.sock.connect(('localhost', 12345))
+        self.connected = True
 
     def sendMessage(self, message):
         bytestream = ByteStream(message)
@@ -27,6 +31,7 @@ class TestServerClient(unittest.TestCase):
     def testQuery(self):
         client = Client()
         print("Creating client...")
+        client.connect()
         try:
             print("Sending query: 'SELECT * FROM Database'")
             result = client.sendMessage('SELECT * FROM Database')
@@ -40,8 +45,8 @@ class TestServerClient(unittest.TestCase):
 
 if __name__ == '__main__':
 
-    # Mode should equal "interactive", "test", or "binary"
-    mode = "interactive"
+    # Mode should equal "interactive" or "test"
+    mode = "test"
 
     if mode == "test":
         unittest.main()
@@ -49,7 +54,7 @@ if __name__ == '__main__':
     
     if mode == "interactive":
         client = Client()
-        client.sock.connect(('localhost', 12346))
+        client.connect()
         client.connected = True
         print("Connected to server...")
         try:
