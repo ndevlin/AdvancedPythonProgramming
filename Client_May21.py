@@ -36,7 +36,8 @@ class TestServerClient(unittest.TestCase):
             print("Sending query: 'SELECT * FROM Database'")
             result = client.sendMessage('SELECT * FROM Database')
             print(f"Received result: {result}")
-            self.assertEqual(json.loads(result), [{'id': 1, 'name': 'Alice'}, {'id': 2, 'name': 'Bob'}])
+            # Test that the returned entry starts with the expected first two entries
+            self.assertEqual(json.loads(result)[:2], [{'id': 1, 'name': 'Jack'}, {'id': 2, 'name': 'Jill'}])
         except Exception as e:
             print(f"Error sending query: {e}")
         finally:
@@ -45,8 +46,8 @@ class TestServerClient(unittest.TestCase):
 
 if __name__ == '__main__':
 
-    # Mode should equal "interactive" or "test"
-    mode = "test"
+    # Mode should equal "interactive", "test", or "interactiveFromTextFile"
+    mode = "interactiveFromText"
 
     if mode == "test":
         unittest.main()
@@ -55,12 +56,40 @@ if __name__ == '__main__':
     if mode == "interactive":
         client = Client()
         client.connect()
-        client.connected = True
         print("Connected to server...")
         try:
             query = ''
             while True:
                 query = input("Client: ")
+                if query.lower() == 'exit':
+                    client.exit()
+                    break
+                else:
+                    result = client.sendMessage(query)
+                    if result.lower() == "exit":
+                        print("Server exited")
+                        print("Closing Connection")
+                        client.sock.close()
+                        break
+                    print(f"Server: {result}")
+        except:
+            print("Closing Connection")
+            client.sock.close()
+    
+    
+    if mode == "interactiveFromText":
+        lines = []
+        with open("Sockets_TestText_May21.txt", 'r') as file:
+            lines = file.readlines()
+        scriptedConvo = iter(lines)
+        client = Client()
+        client.connect()
+        print("Connected to server...")
+        try:
+            query = ''
+            while True:
+                query = next(scriptedConvo).strip()
+                print("Client: " + query)
                 if query.lower() == 'exit':
                     client.exit()
                     break

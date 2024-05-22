@@ -11,7 +11,7 @@ class Server:
         if mode == "test":
             self.db = SqliteManager(db_name)
             self.db.executeQuery('CREATE TABLE IF NOT EXISTS Database (id INTEGER PRIMARY KEY, name TEXT)')
-            self.db.executeQuery("INSERT INTO Database (name) VALUES ('Alice'), ('Bob')")
+            self.db.executeQuery("INSERT INTO Database (name) VALUES ('Jack'), ('Jill')")
 
     def startText(self):
         self.sock.listen(1)
@@ -66,7 +66,7 @@ class Server:
 if __name__ == '__main__':
 
     # interactionMode should be set to "interactive" or "test"
-    interactionMode = "test"
+    interactionMode = "interactive"
 
     if interactionMode == "interactive":
         server = Server("interactive")
