@@ -10,16 +10,18 @@ class Client:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connected = False
 
-    def sendQuery(self, query):
-        if not self.connected:
-            self.sock.connect(('localhost', 12346))
-            self.connected = True
-        byte_stream = ByteStream(None)
-        byte_stream.set_string(query)
-        self.sock.sendall(byte_stream.get_bytes())
+    def sendMessage(self, message):
+        bytestream = ByteStream(message)
+        self.sock.sendall(bytestream.get_bytes())
         response = self.sock.recv(1024)
-        byte_stream = ByteStream(response, isBinary=True)
-        return byte_stream.get_string()
+        bytestream = ByteStream(response, isBinary=True)
+        return bytestream.get_string()
+    
+    def exit(self):
+        print("Exiting")
+        self.sendMessage("exit")
+        print("Closing Connection")
+        self.sock.close()
 
 class TestServerClient(unittest.TestCase):
     def testQuery(self):
@@ -27,7 +29,7 @@ class TestServerClient(unittest.TestCase):
         print("Creating client...")
         try:
             print("Sending query: 'SELECT * FROM Database'")
-            result = client.sendQuery('SELECT * FROM Database')
+            result = client.sendMessage('SELECT * FROM Database')
             print(f"Received result: {result}")
             self.assertEqual(json.loads(result), [{'id': 1, 'name': 'Alice'}, {'id': 2, 'name': 'Bob'}])
         except Exception as e:
@@ -47,9 +49,25 @@ if __name__ == '__main__':
     
     if mode == "interactive":
         client = Client()
-        while True:
-            print("Enter a query:")
-            query = input()
-            result = client.sendQuery(query)
-            print(f"Result: {result}")
+        client.sock.connect(('localhost', 12346))
+        client.connected = True
+        print("Connected to server...")
+        try:
+            query = ''
+            while True:
+                query = input("Client: ")
+                if query.lower() == 'exit':
+                    client.exit()
+                    break
+                else:
+                    result = client.sendMessage(query)
+                    if result.lower() == "exit":
+                        print("Server exited")
+                        print("Closing Connection")
+                        client.sock.close()
+                        break
+                    print(f"Server: {result}")
+        except:
+            print("Closing Connection")
+            client.sock.close()
 

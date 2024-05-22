@@ -40,18 +40,23 @@ class Server:
         print("Waiting for connection...")
         conn, addr = self.sock.accept()
         try:
-            while True:
+            userInput = ''
+            while userInput.lower() != 'exit':
                 data = conn.recv(1024)
-                print(f"Received data: {data}")
                 if data:
                     response = data.decode('utf-8')
                     print(f"Client: {response}")
-
-                    print("Server: ")
-                    userInput = input()
+                    if response.lower() == 'exit':
+                        print("Client exited")
+                        break
+                    userInput = input("Server: ")
                     byte_stream = ByteStream(data=userInput, isBinary=False)
                     conn.sendall(byte_stream.get_bytes())
+            print("Exiting")
+            print("Closing Connection")
+            conn.close()
         except:
+            print("Closing Connection")
             conn.close()
 
     def processQuery(self, query):
