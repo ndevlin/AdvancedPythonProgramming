@@ -2,4 +2,3 @@ Hello! How are you?
 I am also well. How is the weather where you are?
 I see. It is quite warm where I am.
 I have to go, but it has been great talking to you.
-exit

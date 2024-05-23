@@ -6,14 +6,15 @@ from Databases_Refactor_May17 import SqliteManager
 class Server:
     def __init__(self, mode="test", db_name="Database.db"):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.bind(('localhost', 12345))
+        self.sock.bind(('localhost', 12346))
         self.mode = mode
         if mode == "test":
             self.db = SqliteManager(db_name)
             self.db.executeQuery('CREATE TABLE IF NOT EXISTS Database (id INTEGER PRIMARY KEY, name TEXT)')
             self.db.executeQuery("INSERT INTO Database (name) VALUES ('Jack'), ('Jill')")
 
-    def startText(self):
+    def startSqlQueries(self):
+        print("SqlQuery Server")
         self.sock.listen(1)
         print("Starting server...")
         while True:
@@ -36,6 +37,7 @@ class Server:
 
     def startInteractive(self):
         self.sock.listen(1)
+        print("Interactive Chat")
         print("Starting chat...")
         print("Waiting for connection...")
         conn, addr = self.sock.accept()
@@ -58,6 +60,29 @@ class Server:
         except:
             print("Closing Connection")
             conn.close()
+    
+
+    def startReceiveTextFile(self):
+        print("Attempting to Receive Text File")
+        self.sock.listen(1)
+        print("Waiting for connection...")
+        conn, addr = self.sock.accept()
+        try:
+            print("Connected...")
+            receivedData = ""
+            while receivedData.lower() != 'exit':
+                data = conn.recv(1024)
+                if data:
+                    receivedData = data.decode('utf-8')
+                    print(receivedData)
+                    if receivedData.lower() == 'exit':
+                        print("Client exited")
+                        break
+            print("Closing Connection")
+            conn.close()
+        except:
+            print("Closing Connection")
+            conn.close()
 
     def processQuery(self, query):
         result = self.db.executeQuery(query)
@@ -66,13 +91,16 @@ class Server:
 if __name__ == '__main__':
 
     # interactionMode should be set to "interactive" or "test"
-    interactionMode = "interactive"
+    interactionMode = "receiveTextFile"
 
     if interactionMode == "interactive":
         server = Server("interactive")
         server.startInteractive()
 
-
     if interactionMode == "test":
         server = Server("test", "Database.db")
-        server.startText()
+        server.startSqlQueries()
+
+    if interactionMode == "receiveTextFile":
+        server = Server("receiveTextFile")
+        server.startReceiveTextFile()

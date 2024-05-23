@@ -11,7 +11,7 @@ class Client:
         self.connected = False
     
     def connect(self):
-        self.sock.connect(('localhost', 12345))
+        self.sock.connect(('localhost', 12346))
         self.connected = True
 
     def sendMessage(self, message):
@@ -47,12 +47,11 @@ class TestServerClient(unittest.TestCase):
 if __name__ == '__main__':
 
     # Mode should equal "interactive", "test", or "interactiveFromTextFile"
-    mode = "interactiveFromText"
+    mode = "sendTextFile"
 
     if mode == "test":
         unittest.main()
 
-    
     if mode == "interactive":
         client = Client()
         client.connect()
@@ -77,31 +76,29 @@ if __name__ == '__main__':
             client.sock.close()
     
     
-    if mode == "interactiveFromText":
+    if mode == "sendTextFile":
+        filename = "Sockets_TestText_May21.txt"
         lines = []
-        with open("Sockets_TestText_May21.txt", 'r') as file:
-            lines = file.readlines()
-        scriptedConvo = iter(lines)
         client = Client()
-        client.connect()
-        print("Connected to server...")
+        print("Attempting to send text file ", filename)
         try:
-            query = ''
-            while True:
-                query = next(scriptedConvo).strip()
-                print("Client: " + query)
-                if query.lower() == 'exit':
-                    client.exit()
-                    break
-                else:
-                    result = client.sendMessage(query)
-                    if result.lower() == "exit":
-                        print("Server exited")
-                        print("Closing Connection")
-                        client.sock.close()
-                        break
-                    print(f"Server: {result}")
+            client.connect()
+            print("Connected to server...")
+            with open(filename, 'r') as file:
+                lines = file.readlines()
+                print("Beginning to send file")
+                for line in lines: 
+                    bytestream = ByteStream(line)
+                    client.sock.sendall(bytestream.get_bytes())
+                    time.sleep(1)
+            print("File sent, closing connection")
+            bytestream = ByteStream("File sent, Client closing connection")
+            client.sock.sendall(bytestream.get_bytes())
+            time.sleep(1)
+            bytestream = ByteStream("exit")
+            client.sock.sendall(bytestream.get_bytes())
+            client.sock.close()
         except:
-            print("Closing Connection")
+            print("Error. Closing Connection")
             client.sock.close()
 
