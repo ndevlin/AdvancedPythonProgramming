@@ -6,9 +6,9 @@ from Databases_Refactor_May17 import SqliteManager
 class Server:
     def __init__(self, mode="test", db_name="Database.db"):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.bind(('localhost', 12346))
+        self.sock.bind(('localhost', 12345))
         self.mode = mode
-        if mode == "test":
+        if mode == "testSqlQueries":
             self.db = SqliteManager(db_name)
             self.db.executeQuery('CREATE TABLE IF NOT EXISTS Database (id INTEGER PRIMARY KEY, name TEXT)')
             self.db.executeQuery("INSERT INTO Database (name) VALUES ('Jack'), ('Jill')")
@@ -81,7 +81,30 @@ class Server:
             print("Closing Connection")
             conn.close()
         except:
+            print("Error. Closing Connection")
+            conn.close()
+
+
+    def startReceiveBinaryFile(self, filename="receivedBinaryFile.bin"):
+        print("Attempting to Receive Binary File to ", filename)
+        self.sock.listen(1)
+        print("Waiting for connection...")
+        conn, addr = self.sock.accept()
+        try:
+            print("Connected...")
+            receivedData = ""
+            data = conn.recv(131072)
+            if data:
+                receivedData = data.decode('utf-8')
+                with open(filename, "w") as file:
+                    file.write(receivedData)
+                print("Wrote received data to file: ", filename)
+            else:
+                print("No data received")
             print("Closing Connection")
+            conn.close()
+        except:
+            print("Error. Closing Connection")
             conn.close()
 
     def processQuery(self, query):
@@ -90,17 +113,23 @@ class Server:
 
 if __name__ == '__main__':
 
-    # interactionMode should be set to "interactive" or "test"
-    interactionMode = "receiveTextFile"
+    # interactionMode should be set to "interactive", "testSqlQueries", "receiveTextFile", or "receiveBinaryFile"
+    interactionMode = "receiveBinaryFile"
 
     if interactionMode == "interactive":
         server = Server("interactive")
         server.startInteractive()
 
-    if interactionMode == "test":
-        server = Server("test", "Database.db")
+    if interactionMode == "testSqlQueries":
+        server = Server("testSqlQueries", "Database.db")
         server.startSqlQueries()
 
     if interactionMode == "receiveTextFile":
         server = Server("receiveTextFile")
         server.startReceiveTextFile()
+    
+    if interactionMode == "receiveBinaryFile":
+        server = Server("receiveBinaryFile")
+        filename = "receivedBinaryFile.bin"
+        server.startReceiveBinaryFile()
+

@@ -11,7 +11,7 @@ class Client:
         self.connected = False
     
     def connect(self):
-        self.sock.connect(('localhost', 12346))
+        self.sock.connect(('localhost', 12345))
         self.connected = True
 
     def sendMessage(self, message):
@@ -20,6 +20,67 @@ class Client:
         response = self.sock.recv(1024)
         bytestream = ByteStream(response, isBinary=True)
         return bytestream.get_string()
+    
+    def interactiveModeStart(self):
+        self.connect()
+        print("Connected to server...")
+        try:
+            query = ''
+            while True:
+                query = input("Client: ")
+                if query.lower() == 'exit':
+                    self.exit()
+                    break
+                else:
+                    result = self.sendMessage(query)
+                    if result.lower() == "exit":
+                        print("Server exited")
+                        print("Closing Connection")
+                        self.sock.close()
+                        break
+                    print(f"Server: {result}")
+        except:
+            print("Closing Connection")
+            client.sock.close()
+    
+    def sendTextFile(self, filename):
+        print("Attempting to send text file ", filename)
+        try:
+            self.connect()
+            print("Connected to server...")
+            lines = []
+            with open(filename, 'r') as file:
+                lines = file.readlines()
+                print("Beginning to send file")
+                for line in lines: 
+                    bytestream = ByteStream(line)
+                    self.sock.sendall(bytestream.get_bytes())
+                    time.sleep(1)
+            print("File sent, closing connection")
+            bytestream = ByteStream("File sent, Client closing connection")
+            self.sock.sendall(bytestream.get_bytes())
+            time.sleep(1)
+            bytestream = ByteStream("exit")
+            self.sock.sendall(bytestream.get_bytes())
+            self.sock.close()
+        except:
+            print("Error. Closing Connection")
+            self.sock.close()
+    
+    def sendBinaryFile(self, filename):
+        print("Attempting to send binary file ", filename)
+        try:
+            self.connect()
+            print("Connected to server...")
+            with open(filename, 'rb') as file:
+                print("Beginning to send file")
+                bytestream = ByteStream(file.read(), isBinary=True)
+                self.sock.sendall(bytestream.get_bytes())
+                time.sleep(1)
+            print("File sent")
+        finally:
+            print("Closing Connection")
+            self.sock.close()
     
     def exit(self):
         print("Exiting")
@@ -46,59 +107,28 @@ class TestServerClient(unittest.TestCase):
 
 if __name__ == '__main__':
 
-    # Mode should equal "interactive", "test", or "interactiveFromTextFile"
-    mode = "sendTextFile"
+    # Mode should equal "interactive", "testSqlQueries", "sendTextFile"
+    mode = "sendBinaryFile"
 
-    if mode == "test":
+    if mode == "testSqlQueries":
         unittest.main()
 
     if mode == "interactive":
         client = Client()
-        client.connect()
-        print("Connected to server...")
-        try:
-            query = ''
-            while True:
-                query = input("Client: ")
-                if query.lower() == 'exit':
-                    client.exit()
-                    break
-                else:
-                    result = client.sendMessage(query)
-                    if result.lower() == "exit":
-                        print("Server exited")
-                        print("Closing Connection")
-                        client.sock.close()
-                        break
-                    print(f"Server: {result}")
-        except:
-            print("Closing Connection")
-            client.sock.close()
-    
+        client.interactiveModeStart()
     
     if mode == "sendTextFile":
         filename = "Sockets_TestText_May21.txt"
-        lines = []
         client = Client()
-        print("Attempting to send text file ", filename)
-        try:
-            client.connect()
-            print("Connected to server...")
-            with open(filename, 'r') as file:
-                lines = file.readlines()
-                print("Beginning to send file")
-                for line in lines: 
-                    bytestream = ByteStream(line)
-                    client.sock.sendall(bytestream.get_bytes())
-                    time.sleep(1)
-            print("File sent, closing connection")
-            bytestream = ByteStream("File sent, Client closing connection")
-            client.sock.sendall(bytestream.get_bytes())
-            time.sleep(1)
-            bytestream = ByteStream("exit")
-            client.sock.sendall(bytestream.get_bytes())
-            client.sock.close()
-        except:
-            print("Error. Closing Connection")
-            client.sock.close()
+        client.sendTextFile(filename)
 
+    if mode == "sendBinaryFile":
+        with open("testBinaryFile.bin", 'wb') as file:
+            textString = "This is a test binary string"
+            binaryData = textString.encode('utf-8') 
+            file.write(binaryData)
+        
+        filename = "testBinaryFile.bin"
+
+        client = Client()
+        client.sendBinaryFile(filename)
