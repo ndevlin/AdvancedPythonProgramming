@@ -1,3 +1,9 @@
+
+"""
+Client
+May 21 2024
+"""
+
 import socket
 import json
 import unittest
@@ -11,7 +17,7 @@ class Client:
         self.connected = False
     
     def connect(self):
-        self.sock.connect(('localhost', 12345))
+        self.sock.connect(('localhost', 12346))
         self.connected = True
 
     def sendMessage(self, message):
@@ -38,10 +44,10 @@ class Client:
                         print("Closing Connection")
                         self.sock.close()
                         break
-                    print(f"Server: {result}")
+                    print("Server:", result)
         except:
             print("Closing Connection")
-            client.sock.close()
+            self.sock.close()
     
     def sendTextFile(self, filename):
         print("Attempting to send text file ", filename)
@@ -96,7 +102,7 @@ class TestServerClient(unittest.TestCase):
         try:
             print("Sending query: 'SELECT * FROM Database'")
             result = client.sendMessage('SELECT * FROM Database')
-            print(f"Received result: {result}")
+            print("Received result:", result)
             # Test that the returned entry starts with the expected first two entries
             self.assertEqual(json.loads(result)[:2], [{'id': 1, 'name': 'Jack'}, {'id': 2, 'name': 'Jill'}])
         except Exception as e:
@@ -108,7 +114,7 @@ class TestServerClient(unittest.TestCase):
 if __name__ == '__main__':
 
     # Mode should equal "interactive", "testSqlQueries", "sendTextFile"
-    mode = "sendBinaryFile"
+    mode = "testSqlQueries"
 
     if mode == "testSqlQueries":
         unittest.main()

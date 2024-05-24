@@ -1,3 +1,9 @@
+
+"""
+Server
+May 21 2024
+"""
+
 import socket
 import json
 from ByteStreams_May15_NDevlin import ByteStream
@@ -6,7 +12,7 @@ from Databases_Refactor_May17 import SqliteManager
 class Server:
     def __init__(self, mode="test", db_name="Database.db"):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.bind(('localhost', 12345))
+        self.sock.bind(('localhost', 12346))
         self.mode = mode
         if mode == "testSqlQueries":
             self.db = SqliteManager(db_name)
@@ -22,17 +28,17 @@ class Server:
             conn, addr = self.sock.accept()
             print("Connected...")
             data = conn.recv(1024)
-            print(f"Received data: {data}")
+            print("Received data:", data)
             if data:
                 response = self.processQuery(data.decode('utf-8'))
-                print(f"Response: {response}")
+                print(f"Response:", response)
                 # Convert the result to a list of dictionaries
                 result = [{'id': row[0], 'name': row[1]} for row in response]
                 # Convert the result to JSON
-                json_result = json.dumps(result)
-                print(f"Sending response: {json_result}")
-                byte_stream = ByteStream(data=json_result, isBinary=False)
-                conn.sendall(byte_stream.get_bytes())
+                jsonResult = json.dumps(result)
+                print("Sending response:", jsonResult)
+                bytestream = ByteStream(data=jsonResult, isBinary=False)
+                conn.sendall(bytestream.get_bytes())
             conn.close()
 
     def startInteractive(self):
@@ -47,13 +53,13 @@ class Server:
                 data = conn.recv(1024)
                 if data:
                     response = data.decode('utf-8')
-                    print(f"Client: {response}")
+                    print("Client:", response)
                     if response.lower() == 'exit':
                         print("Client exited")
                         break
                     userInput = input("Server: ")
-                    byte_stream = ByteStream(data=userInput, isBinary=False)
-                    conn.sendall(byte_stream.get_bytes())
+                    bytestream = ByteStream(data=userInput, isBinary=False)
+                    conn.sendall(bytestream.get_bytes())
             print("Exiting")
             print("Closing Connection")
             conn.close()
@@ -114,7 +120,7 @@ class Server:
 if __name__ == '__main__':
 
     # interactionMode should be set to "interactive", "testSqlQueries", "receiveTextFile", or "receiveBinaryFile"
-    interactionMode = "receiveBinaryFile"
+    interactionMode = "testSqlQueries"
 
     if interactionMode == "interactive":
         server = Server("interactive")
