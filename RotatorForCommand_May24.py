@@ -3,8 +3,6 @@ Rotator for Command, CaesarCypherClient and RotatorServer
 May 24 2024
 '''
 
-# Not changed from original Rotator_May13_NDevlin.py file
-
 class Rotor:
     def __init__(self, initialPosition=' ', incrementAmount=1, asciiBegin=0x20, asciiEnd=0x80):
         self.asciiBegin = asciiBegin
@@ -67,37 +65,3 @@ class Rotor:
             self.position == other.position and \
             self.incrementAmount == other.incrementAmount
         return False
-
-
-class Decryption:
-    def __init__(self, text=" ", initialPosition=" ", incrementAmount=1):
-        self.text = text
-        self.encrypted = ""
-        self.decrypted = ""
-        self.rotor = Rotor(initialPosition, incrementAmount)
-        self.caesarCypher()
-
-    def caesarCypher(self):
-        self.encrypted = ""
-        for char in self.text:
-            self.encrypted += self.rotor.rotate(char)
-        return self.encrypted
-
-    def decryptCaesarCypher(self):
-        self.decrypted = ""
-        self.rotor.reset()
-        for char in self.encrypted:
-            self.decrypted += self.rotor.reverseRotate(char)
-        return self.decrypted
-
-
-# Main
-
-stringToEncrypt = "HELLO WORLDxyz+_)(*&^%$#@!{}~!"
-print("Encrypt", stringToEncrypt)
-
-decryption = Decryption(stringToEncrypt, "$")
-print("Encrypted:", decryption.encrypted)
-
-print("Decrypted:", decryption.decryptCaesarCypher())
-

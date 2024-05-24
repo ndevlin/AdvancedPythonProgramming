@@ -6,12 +6,13 @@ May 24 2024
 
 
 
-# Currently unmodified from original Server
+# Mostly unmodified from original Server
 
 import socket
 import json
 from ByteStreams_May15_NDevlin import ByteStream
 from Databases_Refactor_May17 import SqliteManager
+from RotatorForCommand_May24 import Rotor
 
 class Server:
     def __init__(self, mode="test", db_name="Database.db"):
