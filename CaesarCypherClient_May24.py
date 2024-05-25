@@ -137,6 +137,8 @@ class Decryption:
 
 # Main
 
+
+
 stringToEncrypt = "HELLO WORLDxyz+_)(*&^%$#@!{}~!"
 print("Encrypt", stringToEncrypt)
 
@@ -145,3 +147,5 @@ print("Encrypted:", decryption.encrypted)
 
 print("Decrypted:", decryption.decryptCaesarCypher())
 
+client = Client()
+client.interactiveModeStart()

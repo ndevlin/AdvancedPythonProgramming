@@ -125,7 +125,7 @@ class Server:
 if __name__ == '__main__':
 
     # interactionMode should be set to "interactive", "testSqlQueries", "receiveTextFile", or "receiveBinaryFile"
-    interactionMode = "testSqlQueries"
+    interactionMode = "interactive"
 
     if interactionMode == "interactive":
         server = Server("interactive")
