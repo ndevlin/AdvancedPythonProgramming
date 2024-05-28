@@ -25,30 +25,6 @@ class Rotor:
         self.position -= self.incrementAmount
         if self.position < self.asciiBegin:
             self.position = self.asciiEnd
-        
-    def rotate(self, char):
-        self.increment()
-        asciiVal = ord(char)
-        offset = self.position - self.asciiBegin
-        newAsciiVal = asciiVal + offset
-
-        aboveEndAmount = newAsciiVal // self.asciiEnd
-        self.rotationCounter += aboveEndAmount
-        newAsciiVal = (newAsciiVal % self.asciiEnd) + (aboveEndAmount * self.asciiBegin) - aboveEndAmount
-        
-        return chr(newAsciiVal)
-    
-    def reverseRotate(self, char):
-        self.increment()
-        asciiVal = ord(char)
-        offset = self.position - self.asciiBegin
-
-        newAsciiVal = asciiVal - offset
-        if newAsciiVal < self.asciiBegin:
-            newAsciiVal = self.asciiEnd - (self.asciiBegin - newAsciiVal) + 1
-            self.rotationCounter += 1
-
-        return chr(newAsciiVal)
     
     def counter(self):
         return self.rotationCounter

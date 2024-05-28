@@ -28,7 +28,7 @@ class Client:
         bytestream = ByteStream(response, isBinary=True)
         return bytestream.get_string()
     
-    def interactiveModeStart(self):
+    def startTransmission(self):
         self.connect()
         print("Connected to server...")
         try:
@@ -74,43 +74,11 @@ class Client:
             print("Error. Closing Connection")
             self.sock.close()
     
-    def sendBinaryFile(self, filename):
-        print("Attempting to send binary file ", filename)
-        try:
-            self.connect()
-            print("Connected to server...")
-            with open(filename, 'rb') as file:
-                print("Beginning to send file")
-                bytestream = ByteStream(file.read(), isBinary=True)
-                self.sock.sendall(bytestream.get_bytes())
-                time.sleep(1)
-            print("File sent")
-        finally:
-            print("Closing Connection")
-            self.sock.close()
-    
     def exit(self):
         print("Exiting")
         self.sendMessage("exit")
         print("Closing Connection")
         self.sock.close()
-
-class TestServerClient(unittest.TestCase):
-    def testQuery(self):
-        client = Client()
-        print("Creating client...")
-        client.connect()
-        try:
-            print("Sending query: 'SELECT * FROM Database'")
-            result = client.sendMessage('SELECT * FROM Database')
-            print("Received result:", result)
-            # Test that the returned entry starts with the expected first two entries
-            self.assertEqual(json.loads(result)[:2], [{'id': 1, 'name': 'Jack'}, {'id': 2, 'name': 'Jill'}])
-        except Exception as e:
-            print(f"Error sending query: {e}")
-        finally:
-            print("Closing client socket...")
-            client.sock.close()
 
 
 class Decryption:
@@ -124,19 +92,43 @@ class Decryption:
     def caesarCypher(self):
         self.encrypted = ""
         for char in self.text:
-            self.encrypted += self.rotor.rotate(char)
+            self.encrypted += self.rotate(char)
         return self.encrypted
+
+    def rotate(self, char):
+        self.rotor.increment()
+        asciiVal = ord(char)
+        offset = self.rotor.position - self.rotor.asciiBegin
+        newAsciiVal = asciiVal + offset
+
+        aboveEndAmount = newAsciiVal // self.rotor.asciiEnd
+        self.rotor.rotationCounter += aboveEndAmount
+        newAsciiVal = (newAsciiVal % self.rotor.asciiEnd) + (aboveEndAmount * self.rotor.asciiBegin) - aboveEndAmount
+        
+        return chr(newAsciiVal)
+    
+    def reverseRotate(self, char):
+        self.rotor.increment()
+        asciiVal = ord(char)
+        offset = self.rotor.position - self.rotor.asciiBegin
+
+        newAsciiVal = asciiVal - offset
+        if newAsciiVal < self.rotor.asciiBegin:
+            newAsciiVal = self.rotor.asciiEnd - (self.rotor.asciiBegin - newAsciiVal) + 1
+            self.rotor.rotationCounter += 1
+
+        return chr(newAsciiVal)
+
 
     def decryptCaesarCypher(self):
         self.decrypted = ""
         self.rotor.reset()
         for char in self.encrypted:
-            self.decrypted += self.rotor.reverseRotate(char)
+            self.decrypted += self.reverseRotate(char)
         return self.decrypted
 
 
 # Main
-
 
 
 stringToEncrypt = "HELLO WORLDxyz+_)(*&^%$#@!{}~!"
@@ -148,4 +140,4 @@ print("Encrypted:", decryption.encrypted)
 print("Decrypted:", decryption.decryptCaesarCypher())
 
 client = Client()
-client.interactiveModeStart()
+client.startTransmission()
