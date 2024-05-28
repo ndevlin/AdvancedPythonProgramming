@@ -5,7 +5,6 @@ May 24 2024
 """
 
 import socket
-import json
 import unittest
 import time
 from ByteStreams_May15_NDevlin import ByteStream
@@ -13,18 +12,30 @@ from RotatorForCommand_May24 import Rotor
 from Command_May24 import Command
 
 
-class Decryption:
-    def __init__(self, text=" ", initialPosition=" ", incrementAmount=1):
-        self.text = text
+class CypherClient:
+    def __init__(self, stringToEncrypt="HELLO WORLD", initialPosition="$"):
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.connected = False
+        self.stringToEncrypt = stringToEncrypt
+        self.initialPosition = initialPosition
+
+        self.incrementAmount = 1
         self.encrypted = ""
         self.decrypted = ""
         self.command = Command()
-        self.rotor = Rotor(initialPosition, incrementAmount)
-        self.caesarCypher()
+
+        self.asciiBegin = 0x20
+        self.asciiEnd = 0x80
+        self.rotor = Rotor(initialPosition, self.incrementAmount)
+
+        self.connect()
+
+        self.encryptAndDecrypt()
+
 
     def caesarCypher(self):
         self.encrypted = ""
-        for char in self.text:
+        for char in self.stringToEncrypt:
             self.encrypted += self.rotate(char)
         return self.encrypted
 
@@ -35,15 +46,15 @@ class Decryption:
         asciiVal = ord(char)
         self.command._set("getPosition")
         print(self.command)
-        offset = self.rotor.position - self.rotor.asciiBegin
+        offset = self.rotor.position - self.asciiBegin
         newAsciiVal = asciiVal + offset
 
-        aboveEndAmount = newAsciiVal // self.rotor.asciiEnd
+        aboveEndAmount = newAsciiVal // self.asciiEnd
 
         self.command._set("rotationCounter")
         print(self.command)
         self.rotor.rotationCounter += aboveEndAmount
-        newAsciiVal = (newAsciiVal % self.rotor.asciiEnd) + (aboveEndAmount * self.rotor.asciiBegin) - aboveEndAmount
+        newAsciiVal = (newAsciiVal % self.asciiEnd) + (aboveEndAmount * self.asciiBegin) - aboveEndAmount
         
         return chr(newAsciiVal)
     
@@ -55,11 +66,11 @@ class Decryption:
 
         self.command._set("getPosition")
         print(self.command)
-        offset = self.rotor.position - self.rotor.asciiBegin
+        offset = self.rotor.position - self.asciiBegin
 
         newAsciiVal = asciiVal - offset
-        if newAsciiVal < self.rotor.asciiBegin:
-            newAsciiVal = self.rotor.asciiEnd - (self.rotor.asciiBegin - newAsciiVal) + 1
+        if newAsciiVal < self.asciiBegin:
+            newAsciiVal = self.asciiEnd - (self.asciiBegin - newAsciiVal) + 1
 
             self.command._set("rotationCounter")
             print(self.command)
@@ -79,28 +90,11 @@ class Decryption:
         return self.decrypted
 
 
-class Client:
-    def __init__(self, stringToEncrypt="HELLO WORLD", initialPosition="$"):
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.connected = False
-        self.stringToEncrypt = stringToEncrypt
-        self.initialPosition = initialPosition
-        self.decryption = None
-        self.encryptAndDecrypt()
-
-
-    def encryptAndDecrypt(self):
-        print("Encrypt", self.stringToEncrypt)
-
-        self.decryption = Decryption(stringToEncrypt, self.initialPosition)
-        print("Encrypted:", self.decryption.encrypted)
-
-        self.decryption.decryptCaesarCypher()
-        print("Decrypted:", self.decryption.decrypted)
-
     def connect(self):
         self.sock.connect(('localhost', 12346))
         self.connected = True
+        print("Connected to server...")
+
 
     def sendMessage(self, message):
         bytestream = ByteStream(message)
@@ -109,9 +103,16 @@ class Client:
         bytestream = ByteStream(response, isBinary=True)
         return bytestream.get_string()
     
-    def startTransmission(self):
-        self.connect()
-        print("Connected to server...")
+
+    def encryptAndDecrypt(self):
+
+        print("Encrypt", self.stringToEncrypt)
+        self.caesarCypher()
+        print("Encrypted:", self.encrypted)
+
+        self.decryptCaesarCypher()
+        print("Decrypted:", self.decrypted)
+
         try:
             query = ''
             while True:
@@ -131,6 +132,7 @@ class Client:
             print("Closing Connection")
             self.sock.close()
     
+
     def sendTextFile(self, filename):
         print("Attempting to send text file ", filename)
         try:
@@ -166,5 +168,5 @@ class Client:
 
 stringToEncrypt = "HELLO WORLDxyz+_)(*&^%$#@!{}~!"
 
-client = Client(stringToEncrypt)
-client.startTransmission()
+client = CypherClient(stringToEncrypt)
+client.encryptAndDecrypt()
