@@ -12,11 +12,73 @@ from ByteStreams_May15_NDevlin import ByteStream
 from RotatorForCommand_May24 import Rotor
 from Command_May24 import Command
 
+
+class Decryption:
+    def __init__(self, text=" ", initialPosition=" ", incrementAmount=1):
+        self.text = text
+        self.encrypted = ""
+        self.decrypted = ""
+        self.rotor = Rotor(initialPosition, incrementAmount)
+        self.caesarCypher()
+
+    def caesarCypher(self):
+        self.encrypted = ""
+        for char in self.text:
+            self.encrypted += self.rotate(char)
+        return self.encrypted
+
+    def rotate(self, char):
+        self.rotor.increment()
+        asciiVal = ord(char)
+        offset = self.rotor.position - self.rotor.asciiBegin
+        newAsciiVal = asciiVal + offset
+
+        aboveEndAmount = newAsciiVal // self.rotor.asciiEnd
+        self.rotor.rotationCounter += aboveEndAmount
+        newAsciiVal = (newAsciiVal % self.rotor.asciiEnd) + (aboveEndAmount * self.rotor.asciiBegin) - aboveEndAmount
+        
+        return chr(newAsciiVal)
+    
+    def reverseRotate(self, char):
+        self.rotor.increment()
+        asciiVal = ord(char)
+        offset = self.rotor.position - self.rotor.asciiBegin
+
+        newAsciiVal = asciiVal - offset
+        if newAsciiVal < self.rotor.asciiBegin:
+            newAsciiVal = self.rotor.asciiEnd - (self.rotor.asciiBegin - newAsciiVal) + 1
+            self.rotor.rotationCounter += 1
+
+        return chr(newAsciiVal)
+
+
+    def decryptCaesarCypher(self):
+        self.decrypted = ""
+        self.rotor.reset()
+        for char in self.encrypted:
+            self.decrypted += self.reverseRotate(char)
+        return self.decrypted
+
+
 class Client:
-    def __init__(self):
+    def __init__(self, stringToEncrypt="HELLO WORLD", initialPosition="$"):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connected = False
-    
+        self.stringToEncrypt = stringToEncrypt
+        self.initialPosition = initialPosition
+        self.decryption = None
+        self.encryptAndDecrypt()
+
+
+    def encryptAndDecrypt(self):
+        print("Encrypt", self.stringToEncrypt)
+
+        self.decryption = Decryption(stringToEncrypt, self.initialPosition)
+        print("Encrypted:", self.decryption.encrypted)
+
+        self.decryption.decryptCaesarCypher()
+        print("Decrypted:", self.decryption.decrypted)
+
     def connect(self):
         self.sock.connect(('localhost', 12346))
         self.connected = True
@@ -81,63 +143,9 @@ class Client:
         self.sock.close()
 
 
-class Decryption:
-    def __init__(self, text=" ", initialPosition=" ", incrementAmount=1):
-        self.text = text
-        self.encrypted = ""
-        self.decrypted = ""
-        self.rotor = Rotor(initialPosition, incrementAmount)
-        self.caesarCypher()
-
-    def caesarCypher(self):
-        self.encrypted = ""
-        for char in self.text:
-            self.encrypted += self.rotate(char)
-        return self.encrypted
-
-    def rotate(self, char):
-        self.rotor.increment()
-        asciiVal = ord(char)
-        offset = self.rotor.position - self.rotor.asciiBegin
-        newAsciiVal = asciiVal + offset
-
-        aboveEndAmount = newAsciiVal // self.rotor.asciiEnd
-        self.rotor.rotationCounter += aboveEndAmount
-        newAsciiVal = (newAsciiVal % self.rotor.asciiEnd) + (aboveEndAmount * self.rotor.asciiBegin) - aboveEndAmount
-        
-        return chr(newAsciiVal)
-    
-    def reverseRotate(self, char):
-        self.rotor.increment()
-        asciiVal = ord(char)
-        offset = self.rotor.position - self.rotor.asciiBegin
-
-        newAsciiVal = asciiVal - offset
-        if newAsciiVal < self.rotor.asciiBegin:
-            newAsciiVal = self.rotor.asciiEnd - (self.rotor.asciiBegin - newAsciiVal) + 1
-            self.rotor.rotationCounter += 1
-
-        return chr(newAsciiVal)
-
-
-    def decryptCaesarCypher(self):
-        self.decrypted = ""
-        self.rotor.reset()
-        for char in self.encrypted:
-            self.decrypted += self.reverseRotate(char)
-        return self.decrypted
-
-
 # Main
 
-
 stringToEncrypt = "HELLO WORLDxyz+_)(*&^%$#@!{}~!"
-print("Encrypt", stringToEncrypt)
 
-decryption = Decryption(stringToEncrypt, "$")
-print("Encrypted:", decryption.encrypted)
-
-print("Decrypted:", decryption.decryptCaesarCypher())
-
-client = Client()
+client = Client(stringToEncrypt)
 client.startTransmission()
