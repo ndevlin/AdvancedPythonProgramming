@@ -19,7 +19,7 @@ class Command:
         "TBD": 0b111
     }
 
-    def __init__(self, op, argv=None):
+    def __init__(self, op="reset", argv=None):
         if isinstance(op, str):
             op = self.COMMANDS[op]
         self.op = op

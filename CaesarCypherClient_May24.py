@@ -18,6 +18,7 @@ class Decryption:
         self.text = text
         self.encrypted = ""
         self.decrypted = ""
+        self.command = Command()
         self.rotor = Rotor(initialPosition, incrementAmount)
         self.caesarCypher()
 
@@ -28,25 +29,40 @@ class Decryption:
         return self.encrypted
 
     def rotate(self, char):
+        self.command._set("increment")
+        print(self.command)
         self.rotor.increment()
         asciiVal = ord(char)
+        self.command._set("getPosition")
+        print(self.command)
         offset = self.rotor.position - self.rotor.asciiBegin
         newAsciiVal = asciiVal + offset
 
         aboveEndAmount = newAsciiVal // self.rotor.asciiEnd
+
+        self.command._set("rotationCounter")
+        print(self.command)
         self.rotor.rotationCounter += aboveEndAmount
         newAsciiVal = (newAsciiVal % self.rotor.asciiEnd) + (aboveEndAmount * self.rotor.asciiBegin) - aboveEndAmount
         
         return chr(newAsciiVal)
     
     def reverseRotate(self, char):
+        self.command._set("increment")
+        print(self.command)
         self.rotor.increment()
         asciiVal = ord(char)
+
+        self.command._set("getPosition")
+        print(self.command)
         offset = self.rotor.position - self.rotor.asciiBegin
 
         newAsciiVal = asciiVal - offset
         if newAsciiVal < self.rotor.asciiBegin:
             newAsciiVal = self.rotor.asciiEnd - (self.rotor.asciiBegin - newAsciiVal) + 1
+
+            self.command._set("rotationCounter")
+            print(self.command)
             self.rotor.rotationCounter += 1
 
         return chr(newAsciiVal)
@@ -54,6 +70,9 @@ class Decryption:
 
     def decryptCaesarCypher(self):
         self.decrypted = ""
+
+        self.command._set("reset")
+        print(self.command)
         self.rotor.reset()
         for char in self.encrypted:
             self.decrypted += self.reverseRotate(char)
