@@ -42,13 +42,13 @@ class CypherClient:
         self.command._set("increment")
         print(self.command)
         message = self.command._get()
-        binaryMessage = message.to_bytes((message.bit_length() + 7) // 8, 'big')
+        binaryMessage = message.to_bytes(1, 'big')
         self.sendMessage(binaryMessage, binary=True)
         asciiVal = ord(char)
         self.command._set("getPosition")
         print(self.command)
         message = self.command._get()
-        binaryMessage = message.to_bytes((message.bit_length() + 7) // 8, 'big')
+        binaryMessage = message.to_bytes(1, 'big')
         receivedMessage = self.sendMessage(binaryMessage, binary=True)
         position = int(receivedMessage)
         offset = position - self.asciiBegin
@@ -57,7 +57,7 @@ class CypherClient:
         self.command._set("rotationCounter")
         print(self.command)
         message = self.command._get()
-        binaryMessage = message.to_bytes((message.bit_length() + 7) // 8, 'big')
+        binaryMessage = message.to_bytes(1, 'big')
         self.sendMessage(binaryMessage, binary=True)
         newAsciiVal = (newAsciiVal % self.asciiEnd) + self.asciiBegin
         
