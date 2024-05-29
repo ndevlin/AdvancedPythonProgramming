@@ -11,7 +11,7 @@ from RotatorForCommand_May24 import Rotor
 class Server:
     def __init__(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.bind(('localhost', 12346))
+        self.sock.bind(('localhost', 12345))
 
         self.asciiBegin = 0x20
         self.asciiEnd = 0x80
@@ -60,8 +60,7 @@ class Server:
             self.rotor.decrement()
             return self.rotor.__str__()
         elif data == 0b011:
-            self.rotor.increment()
-            return self.rotor.__str__()
+            pass    # This indicates command to increment N=0 times, which is a no-op
         elif data == 0b100:
             return str(self.rotor.position)
         elif data == 0b101:
@@ -71,8 +70,23 @@ class Server:
             return str(self.rotor.rotationCounter)
         elif data == 0b111:
             print("Client sent exit command")
+        elif data > 0b111:
+            # This is a command to increment n times
+            value = data >> 3   # Discard the opcode bits
+            # Use the top bit as a sign bit
+            if value & 0b10000:  # If the top bit is 1, the value is negative
+                value = -(value & 0b01111)
+            print(f"value: {value}")
+            if value > 0:
+                for i in range(value):
+                    self.rotor.increment()
+            elif value < 0:
+                for i in range(abs(value)):
+                    self.rotor.decrement()
+            return self.rotor.__str__()
         else:
             raise ValueError(f"Invalid opcode: {data}")
+        
 
     def startReceiveTextFile(self):
         print("Attempting to Receive Text File")

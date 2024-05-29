@@ -28,7 +28,7 @@ class CypherClient:
 
 
     def connect(self):
-        self.sock.connect(('localhost', 12346))
+        self.sock.connect(('localhost', 12345))
         self.connected = True
         print("Connected to server...")
 
@@ -135,6 +135,14 @@ class CypherClient:
         print("Closing Connection")
         self.sock.close()
 
+    
+    def testSendingOpCode3(self, nValue):
+        self.command._set("nTimes", nValue)
+        message = self.command._get()
+        binaryMessage = message.to_bytes(1, 'big')
+        print("Response: ", self.sendMessage(binaryMessage, binary=True))
+
+
 
     def sendTextFile(self, filename):
         print("Attempting to send text file ", filename)
@@ -165,5 +173,12 @@ class CypherClient:
 stringToEncrypt = "HELLO WORLDxyz+_)(*&^%$#@!{}~!"
 
 client = CypherClient(stringToEncrypt)
+
+# test sending 0b011
+nValue = 3
+client.testSendingOpCode3(nValue)
+nValue = -3
+client.testSendingOpCode3(nValue)
+
 client.encryptAndDecrypt()
 

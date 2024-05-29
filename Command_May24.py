@@ -28,6 +28,28 @@ class Command:
             cmd = self.COMMANDS[cmd]
         self.op = cmd
         self.argv = argv
+        if self.argv is not None:
+            shiftedArgv = self.argv << 3
+            self.op = shiftedArgv | self.op
+    
+    def _set(self, cmd, argv=None):
+        if isinstance(cmd, str):
+            cmd = self.COMMANDS[cmd]
+        self.op = cmd
+        self.argv = argv
+        # Can handle a max absolute argv value of 15
+        if self.argv is not None:
+            if abs(self.argv) > 15:
+                raise ValueError("argv must be between -15 and 15")
+            newValue = abs(self.argv) << 3
+            # Set the sign bit
+            if self.argv < 0:
+                newValue = newValue | 0b10000000
+            else:
+                newValue = (newValue & 0b01111111) | self.op
+            newValue += 3
+            self.op = newValue
+            
 
     def _get(self):
         return self.op
