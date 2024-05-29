@@ -5,8 +5,6 @@ May 24 2024
 
 import unittest
 
-from RotatorForCommand_May24 import Rotor
-
 class Command:
     COMMANDS = {
         "reset": 0b000,
@@ -72,3 +70,4 @@ class TestCommand(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+

@@ -5,12 +5,9 @@ May 24 2024
 """
 
 import socket
-import unittest
 import time
 from ByteStreams_May15_NDevlin import ByteStream
-from RotatorForCommand_May24 import Rotor
 from Command_May24 import Command
-
 
 class CypherClient:
     def __init__(self, stringToEncrypt="HELLO WORLD", initialPosition="$"):
@@ -35,7 +32,6 @@ class CypherClient:
         self.connected = True
         print("Connected to server...")
 
-
     def caesarCypher(self):
         self.encrypted = ""
         for char in self.stringToEncrypt:
@@ -47,6 +43,7 @@ class CypherClient:
         message = self.command._get()
         binaryMessage = message.to_bytes(1, 'big')
         self.sendMessage(binaryMessage, binary=True)
+
         asciiVal = ord(char)
         self.command._set("getPosition")
         message = self.command._get()
@@ -60,6 +57,7 @@ class CypherClient:
         message = self.command._get()
         binaryMessage = message.to_bytes(1, 'big')
         self.sendMessage(binaryMessage, binary=True)
+
         aboveEndAmount = newAsciiVal // self.asciiEnd
         newAsciiVal = (newAsciiVal % self.asciiEnd) + (aboveEndAmount * self.asciiBegin) - aboveEndAmount
         newChar = chr(newAsciiVal)
@@ -71,16 +69,16 @@ class CypherClient:
         message = self.command._get()
         binaryMessage = message.to_bytes(1, 'big')
         self.sendMessage(binaryMessage, binary=True)
-        asciiVal = ord(char)
 
+        asciiVal = ord(char)
         self.command._set("getPosition")
         message = self.command._get()
         binaryMessage = message.to_bytes(1, 'big')
         receivedMessage = self.sendMessage(binaryMessage, binary=True)
         position = int(receivedMessage)
         offset = position - self.asciiBegin
-
         newAsciiVal = asciiVal - offset
+
         if newAsciiVal < self.asciiBegin:
             newAsciiVal = self.asciiEnd - (self.asciiBegin - newAsciiVal) + 1
 
@@ -92,14 +90,13 @@ class CypherClient:
 
         return newChar
 
-
     def decryptCaesarCypher(self):
         self.decrypted = ""
 
         self.command._set("reset")
         message = self.command._get()
         binaryMessage = message.to_bytes(1, 'big')
-        if message == 0: binaryMessage = b'\x00'
+        if message == 0: binaryMessage = b'\x00'    # 0 gets interpreted as no data otherwise
         self.sendMessage(binaryMessage)
         for char in self.encrypted:
             self.decrypted += self.reverseRotate(char)
@@ -115,7 +112,6 @@ class CypherClient:
     
 
     def encryptAndDecrypt(self):
-
         try:
             print("Encrypt", self.stringToEncrypt)
             self.caesarCypher()
@@ -129,7 +125,16 @@ class CypherClient:
         except:
             print("Closing Connection")
             self.sock.close()
-    
+
+    def exit(self):
+        print("Exiting")
+        self.command._set("close")
+        message = self.command._get()
+        binaryMessage = message.to_bytes(1, 'big')
+        self.sendMessage(binaryMessage, binary=True)
+        print("Closing Connection")
+        self.sock.close()
+
 
     def sendTextFile(self, filename):
         print("Attempting to send text file ", filename)
@@ -154,19 +159,9 @@ class CypherClient:
         except:
             print("Error. Closing Connection")
             self.sock.close()
-    
-    def exit(self):
-        print("Exiting")
-        self.command._set("close")
-        message = self.command._get()
-        binaryMessage = message.to_bytes(1, 'big')
-        self.sendMessage(binaryMessage, binary=True)
-        print("Closing Connection")
-        self.sock.close()
 
 
 # Main
-
 stringToEncrypt = "HELLO WORLDxyz+_)(*&^%$#@!{}~!"
 
 client = CypherClient(stringToEncrypt)

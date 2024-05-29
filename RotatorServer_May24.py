@@ -5,7 +5,6 @@ May 24 2024
 """
 
 import socket
-import json
 from ByteStreams_May15_NDevlin import ByteStream
 from RotatorForCommand_May24 import Rotor
 
@@ -21,7 +20,7 @@ class Server:
         self.rotor = Rotor(self.initialPosition, self.incrementAmount, self.asciiBegin, self.asciiEnd)
 
 
-    def startInteractive(self):
+    def startTransmission(self):
         self.sock.listen(1)
         print("Waiting for connection...")
         conn, addr = self.sock.accept()
@@ -44,7 +43,6 @@ class Server:
                         print("Sending Response: -1")
                         bytestream = ByteStream(data="-1", isBinary=False)
                         conn.sendall(bytestream.get_bytes())
-
             print("Exiting")
             print("Closing Connection")
             conn.close()
@@ -76,7 +74,6 @@ class Server:
         else:
             raise ValueError(f"Invalid opcode: {data}")
 
-
     def startReceiveTextFile(self):
         print("Attempting to Receive Text File")
         self.sock.listen(1)
@@ -101,4 +98,6 @@ class Server:
 
 if __name__ == '__main__':
     server = Server()
-    server.startInteractive()
+    server.startTransmission()
+
+    
