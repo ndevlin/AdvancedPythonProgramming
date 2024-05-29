@@ -16,7 +16,7 @@ class Command:
         "getPosition": 0b100,
         "getCharacter": 0b101,
         "rotationCounter": 0b110,
-        "TBD": 0b111
+        "close": 0b111
     }
 
     def __init__(self, op="reset", argv=None):
@@ -32,7 +32,10 @@ class Command:
         self.argv = argv
 
     def _get(self):
-        return self.op, self.argv
+        return self.op
+    
+    def _getArgv(self):
+        return self.argv
 
     def __str__(self):
         return f"Command(op={self.op}, argv={self.argv})"
@@ -41,31 +44,31 @@ class Command:
 class TestCommand(unittest.TestCase):
     def test_reset(self):
         cmd = Command("reset")
-        self.assertEqual(cmd._get(), (0b000, None))
+        self.assertEqual(cmd._get(), 0b000)
 
     def test_increment(self):
         cmd = Command("increment")
-        self.assertEqual(cmd._get(), (0b001, None))
+        self.assertEqual(cmd._get(), 0b001)
 
     def test_decrement(self):
         cmd = Command("decrement")
-        self.assertEqual(cmd._get(), (0b010, None))
+        self.assertEqual(cmd._get(), 0b010)
 
     def test_n_times(self):
         cmd = Command("nTimes", 2)
-        self.assertEqual(cmd._get(), (0b011, 2))
+        self.assertEqual(cmd._get(), 0b011)
 
     def test_get_position(self):
         cmd = Command("getPosition")
-        self.assertEqual(cmd._get(), (0b100, None))
+        self.assertEqual(cmd._get(), 0b100)
 
     def test_get_character(self):
         cmd = Command("getCharacter")
-        self.assertEqual(cmd._get(), (0b101, None))
+        self.assertEqual(cmd._get(), 0b101)
 
     def test_rotation_counter(self):
         cmd = Command("rotationCounter")
-        self.assertEqual(cmd._get(), (0b110, None))
+        self.assertEqual(cmd._get(), 0b110)
 
 if __name__ == '__main__':
     unittest.main()

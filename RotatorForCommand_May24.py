@@ -4,9 +4,9 @@ May 24 2024
 '''
 
 class Rotor:
-    def __init__(self, initialPosition=' ', incrementAmount=1):
-        self.asciiBegin = 0x20
-        self.asciiEnd = 0x80
+    def __init__(self, initialPosition=' ', incrementAmount=1, asciiBegin=0x20, asciiEnd=0x80):
+        self.asciiBegin = asciiBegin
+        self.asciiEnd = asciiEnd
         self.initialPosition = ord(initialPosition)
         self.position = ord(initialPosition)
         self.rotationCounter = 0

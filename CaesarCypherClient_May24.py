@@ -26,7 +26,6 @@ class CypherClient:
 
         self.asciiBegin = 0x20
         self.asciiEnd = 0x80
-        self.rotor = Rotor(initialPosition, self.incrementAmount)
 
         self.connect()
 
@@ -42,31 +41,43 @@ class CypherClient:
     def rotate(self, char):
         self.command._set("increment")
         print(self.command)
-        self.rotor.increment()
+        message = self.command._get()
+        binaryMessage = message.to_bytes((message.bit_length() + 7) // 8, 'big')
+        self.sendMessage(binaryMessage, binary=True)
         asciiVal = ord(char)
         self.command._set("getPosition")
         print(self.command)
-        offset = self.rotor.position - self.asciiBegin
+        message = self.command._get()
+        binaryMessage = message.to_bytes((message.bit_length() + 7) // 8, 'big')
+        receivedMessage = self.sendMessage(binaryMessage, binary=True)
+        position = int(receivedMessage)
+        offset = position - self.asciiBegin
         newAsciiVal = asciiVal + offset
-
-        aboveEndAmount = newAsciiVal // self.asciiEnd
 
         self.command._set("rotationCounter")
         print(self.command)
-        self.rotor.rotationCounter += aboveEndAmount
-        newAsciiVal = (newAsciiVal % self.asciiEnd) + (aboveEndAmount * self.asciiBegin) - aboveEndAmount
+        message = self.command._get()
+        binaryMessage = message.to_bytes((message.bit_length() + 7) // 8, 'big')
+        self.sendMessage(binaryMessage, binary=True)
+        newAsciiVal = (newAsciiVal % self.asciiEnd) + self.asciiBegin
         
         return chr(newAsciiVal)
     
     def reverseRotate(self, char):
         self.command._set("increment")
         print(self.command)
-        self.rotor.increment()
+        message = self.command._get()
+        binaryMessage = message.to_bytes(1, 'big')
+        self.sendMessage(binaryMessage, binary=True)
         asciiVal = ord(char)
 
         self.command._set("getPosition")
         print(self.command)
-        offset = self.rotor.position - self.asciiBegin
+        message = self.command._get()
+        binaryMessage = message.to_bytes(1, 'big')
+        receivedMessage = self.sendMessage(binaryMessage, binary=True)
+        position = int(receivedMessage)
+        offset = position - self.asciiBegin
 
         newAsciiVal = asciiVal - offset
         if newAsciiVal < self.asciiBegin:
@@ -74,7 +85,9 @@ class CypherClient:
 
             self.command._set("rotationCounter")
             print(self.command)
-            self.rotor.rotationCounter += 1
+            message = self.command._get()
+            binaryMessage = message.to_bytes(1, 'big')
+            self.sendMessage(binaryMessage, binary=True)
 
         return chr(newAsciiVal)
 
@@ -84,7 +97,10 @@ class CypherClient:
 
         self.command._set("reset")
         print(self.command)
-        self.rotor.reset()
+        message = self.command._get()
+        binaryMessage = message.to_bytes(1, 'big')
+        if message == 0: binaryMessage = b'\x00'
+        self.sendMessage(binaryMessage)
         for char in self.encrypted:
             self.decrypted += self.reverseRotate(char)
         return self.decrypted
@@ -96,8 +112,8 @@ class CypherClient:
         print("Connected to server...")
 
 
-    def sendMessage(self, message):
-        bytestream = ByteStream(message)
+    def sendMessage(self, message, binary=True):
+        bytestream = ByteStream(message, isBinary=binary)
         self.sock.sendall(bytestream.get_bytes())
         response = self.sock.recv(1024)
         bytestream = ByteStream(response, isBinary=True)
