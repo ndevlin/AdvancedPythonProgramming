@@ -47,9 +47,8 @@ class Command:
                 newValue = newValue | 0b10000000
             else:
                 newValue = (newValue & 0b01111111) | self.op
-            newValue += 3
+            newValue += 3   # Add back the opcode
             self.op = newValue
-            
 
     def _get(self):
         return self.op
