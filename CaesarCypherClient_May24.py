@@ -29,14 +29,12 @@ class CypherClient:
 
         self.connect()
 
-        self.encryptAndDecrypt()
-
 
     def connect(self):
-        self.sock.connect(('localhost', 12345))
+        self.sock.connect(('localhost', 12346))
         self.connected = True
         print("Connected to server...")
-        
+
 
     def caesarCypher(self):
         self.encrypted = ""
@@ -62,11 +60,9 @@ class CypherClient:
         message = self.command._get()
         binaryMessage = message.to_bytes(1, 'big')
         self.sendMessage(binaryMessage, binary=True)
-        #newAsciiVal = (newAsciiVal % self.asciiEnd) + self.asciiBegin
         aboveEndAmount = newAsciiVal // self.asciiEnd
         newAsciiVal = (newAsciiVal % self.asciiEnd) + (aboveEndAmount * self.asciiBegin) - aboveEndAmount
         newChar = chr(newAsciiVal)
-        print(f"newChar: {newChar}")
         
         return newChar
     
@@ -92,8 +88,9 @@ class CypherClient:
             message = self.command._get()
             binaryMessage = message.to_bytes(1, 'big')
             self.sendMessage(binaryMessage, binary=True)
+        newChar = chr(newAsciiVal)
 
-        return chr(newAsciiVal)
+        return newChar
 
 
     def decryptCaesarCypher(self):
@@ -119,28 +116,16 @@ class CypherClient:
 
     def encryptAndDecrypt(self):
 
-        print("Encrypt", self.stringToEncrypt)
-        self.caesarCypher()
-        print("Encrypted:", self.encrypted)
-
-        self.decryptCaesarCypher()
-        print("Decrypted:", self.decrypted)
-
         try:
-            query = ''
-            while True:
-                query = input("Client: ")
-                if query.lower() == 'exit':
-                    self.exit()
-                    break
-                else:
-                    result = self.sendMessage(query)
-                    if result.lower() == "exit":
-                        print("Server exited")
-                        print("Closing Connection")
-                        self.sock.close()
-                        break
-                    print("Server:", result)
+            print("Encrypt", self.stringToEncrypt)
+            self.caesarCypher()
+            print("Encrypted:", self.encrypted)
+
+            self.decryptCaesarCypher()
+            print("Decrypted:", self.decrypted)
+
+            self.exit()
+
         except:
             print("Closing Connection")
             self.sock.close()
@@ -172,7 +157,10 @@ class CypherClient:
     
     def exit(self):
         print("Exiting")
-        self.sendMessage("exit")
+        self.command._set("close")
+        message = self.command._get()
+        binaryMessage = message.to_bytes(1, 'big')
+        self.sendMessage(binaryMessage, binary=True)
         print("Closing Connection")
         self.sock.close()
 
@@ -183,3 +171,4 @@ stringToEncrypt = "HELLO WORLDxyz+_)(*&^%$#@!{}~!"
 
 client = CypherClient(stringToEncrypt)
 client.encryptAndDecrypt()
+

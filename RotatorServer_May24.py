@@ -12,7 +12,7 @@ from RotatorForCommand_May24 import Rotor
 class Server:
     def __init__(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.bind(('localhost', 12345))
+        self.sock.bind(('localhost', 12346))
 
         self.asciiBegin = 0x20
         self.asciiEnd = 0x80
@@ -25,32 +25,32 @@ class Server:
         self.sock.listen(1)
         print("Waiting for connection...")
         conn, addr = self.sock.accept()
-        #try:
-        rotorResponse = ''
-        while rotorResponse != 0b111:
-            data = conn.recv(1)
-            data = int.from_bytes(data, 'big')
-            if data != None:
-                print("Client:", data)
-                if data == 0b111:
-                    print("Client exited")
-                    break
-                rotorResponse = self.rotorResponse(data)
-                if rotorResponse:
-                    print("Sending Response: ", rotorResponse)
-                    bytestream = ByteStream(data=rotorResponse, isBinary=False)
-                    conn.sendall(bytestream.get_bytes())
-                else:
-                    print("Sending Response: -1")
-                    bytestream = ByteStream(data="-1", isBinary=False)
-                    conn.sendall(bytestream.get_bytes())
+        try:
+            rotorResponse = ''
+            while rotorResponse != 0b111:
+                data = conn.recv(1)
+                data = int.from_bytes(data, 'big')
+                if data != None:
+                    print("Client:", data)
+                    if data == 0b111:
+                        print("Client exited")
+                        break
+                    rotorResponse = self.rotorResponse(data)
+                    if rotorResponse:
+                        print("Sending Response: ", rotorResponse)
+                        bytestream = ByteStream(data=rotorResponse, isBinary=False)
+                        conn.sendall(bytestream.get_bytes())
+                    else:
+                        print("Sending Response: -1")
+                        bytestream = ByteStream(data="-1", isBinary=False)
+                        conn.sendall(bytestream.get_bytes())
 
-        print("Exiting")
-        print("Closing Connection")
-        conn.close()
-        #except:
-            #print("Error: Closing Connection")
-           # conn.close()
+            print("Exiting")
+            print("Closing Connection")
+            conn.close()
+        except:
+            print("Error: Closing Connection")
+            conn.close()
 
     def rotorResponse(self, data):
         if data == 0b000:
