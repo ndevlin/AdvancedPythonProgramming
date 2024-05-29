@@ -12,7 +12,7 @@ from RotatorForCommand_May24 import Rotor
 class Server:
     def __init__(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.bind(('localhost', 12346))
+        self.sock.bind(('localhost', 12345))
 
         self.asciiBegin = 0x20
         self.asciiEnd = 0x80
