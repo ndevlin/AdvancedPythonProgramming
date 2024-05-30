@@ -65,8 +65,11 @@ class WebScraper():
             return
         
         headers = self.memberDict["tr"][0]
+
         #numRows = int(re.search(r'\n(\d+)\n', self.memberDict["tr"][-1]).group(1))
-        numRows = len(self.memberDict["tr"]) - 1
+        #numRows = len(self.memberDict["tr"]) - 1
+        numRows = 340
+
         headers = headers.split("\n")
         while "" in headers:
             headers.remove("")
@@ -79,7 +82,6 @@ class WebScraper():
                 row.append(self.memberDict["td"][currVal])
             pandaReadyList.append(row)
         self.dataFrame = pd.DataFrame(pandaReadyList, columns = headers)
-
         
         return self.dataFrame
     
@@ -90,7 +92,7 @@ class WebScraper():
 # DataFrames Code
 webScraper = WebScraper()
 
-webScraper.webPageFromFile("GHGEmissionsTestVersion.html")
+webScraper.webPageFromFile("GHGEmissions.html")
 
 relevantTags = ["th", "tr", "td"]
 
@@ -205,9 +207,9 @@ class PlotManager:
         plt.show()
 
 # Main Code
-plotManager = PlotManager(originalDataFrame)
+plotManager = PlotManager(averageEmissionsDataFrame)
 print(plotManager)
-plotManager.linePlot(title='Line Plot Example')
+plotManager.barPlot(title='Bar Plot Example')
 
 print("Done")
 
