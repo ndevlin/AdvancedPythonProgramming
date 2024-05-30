@@ -164,3 +164,55 @@ print(title)
 print(averageEmissionsDataFrame)
 #display_dataframe(averageEmissionsDataFrame, title)
 
+
+
+"""
+Matplotlib Plotting
+"""
+
+import matplotlib.pyplot as plt
+
+class PlotManager:
+    def __init__(self, df):
+        self.df = df
+
+    def __str__(self):
+        return f'PlotManager for DataFrame with {self.df.shape[0]} rows and {self.df.shape[1]} columns'
+
+    def linePlot(self, x=None, y=None, title="Line Plot", xlabel="X-axis", ylabel="Y-axis"):
+        if not x or not y:
+            x, y = self.df.columns[:2]
+        plt.figure()
+        plt.plot(self.df[x], self.df[y])
+        plt.title(title)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.show()
+
+    def barPlot(self, x=None, y=None, title="Bar Plot", xlabel="X-axis", ylabel="Y-axis"):
+        if not x or not y:
+            x, y = self.df.columns[:2]
+        plt.figure()
+        plt.bar(self.df[x], self.df[y])
+        plt.title(title)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.show()
+
+    def scatterPlot(self, x=None, y=None, title="Scatter Plot", xlabel="X-axis", ylabel="Y-axis"):
+        if not x or not y:
+            x, y = self.df.columns[:2]
+        plt.figure()
+        plt.scatter(self.df[x], self.df[y])
+        plt.title(title)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.show()
+
+# Main Code
+plotManager = PlotManager(originalDataFrame)
+print(plotManager)
+plotManager.linePlot(title='Line Plot Example')
+
+print("Done")
+
