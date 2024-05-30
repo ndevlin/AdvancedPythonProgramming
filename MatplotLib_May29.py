@@ -3,10 +3,6 @@ MatplotLib
 May 29 2024
 '''
 
-
-# Starting from M1
-
-
 # From Dataframes
 from collections import defaultdict
 from urllib.request import urlopen
@@ -68,23 +64,22 @@ class WebScraper():
             print("Must Clean Tags before converting to Pandas DataFrame")
             return
         
-        try:
-            headers = self.memberDict["tr"][0]
-            numRows = int(re.search(r'\n(\d+)\n', self.memberDict["tr"][-1]).group(1))
-            headers = headers.split("\n")
-            while "" in headers:
-                headers.remove("")
-            numCols = len(headers)
-            pandaReadyList = []
-            for i in range(numRows):
-                row = []
-                for j in range(numCols):
-                    currVal = i * numCols + j
-                    row.append(self.memberDict["td"][currVal])
-                pandaReadyList.append(row)
-            self.dataFrame = pd.DataFrame(pandaReadyList, columns = headers)
-        except:
-            print("Conversion to DataFrame failed")
+        headers = self.memberDict["tr"][0]
+        #numRows = int(re.search(r'\n(\d+)\n', self.memberDict["tr"][-1]).group(1))
+        numRows = len(self.memberDict["tr"]) - 1
+        headers = headers.split("\n")
+        while "" in headers:
+            headers.remove("")
+        numCols = len(headers)
+        pandaReadyList = []
+        for i in range(numRows):
+            row = []
+            for j in range(numCols):
+                currVal = i * numCols + j
+                row.append(self.memberDict["td"][currVal])
+            pandaReadyList.append(row)
+        self.dataFrame = pd.DataFrame(pandaReadyList, columns = headers)
+
         
         return self.dataFrame
     
