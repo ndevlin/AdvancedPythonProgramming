@@ -186,9 +186,15 @@ class PlotManager:
         plt.ylabel(ylabel)
         plt.show()
 
-    def barPlot(self, x=None, y=None, title="Bar Plot", xlabel="X-axis", ylabel="Y-axis"):
+    def barPlot(self, x=None, y=None, title=None, xlabel=None, ylabel=None):
         if not x or not y:
             x, y = self.df.columns[:2]
+        if not xlabel:
+            xlabel = x
+        if not ylabel:
+            ylabel = y
+        if not title:
+            title = f'{ylabel} by {xlabel}'
         plt.figure()
         plt.bar(self.df[x], self.df[y])
         plt.title(title)
@@ -209,7 +215,7 @@ class PlotManager:
 # Main Code
 plotManager = PlotManager(averageEmissionsDataFrame)
 print(plotManager)
-plotManager.barPlot(title='Bar Plot Example')
+plotManager.barPlot()
 
 print("Done")
 
