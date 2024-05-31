@@ -3,11 +3,16 @@ MatplotLib
 May 29 2024
 '''
 
-# From Dataframes
+"""
+This section of code is used to create a Pandas DataFrame from html file
+"""
+
 from collections import defaultdict
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 import re
+import tkinter as tk
+from tkinter import ttk
 
 import pandas as pd
 
@@ -47,7 +52,6 @@ class WebScraper():
             return
 
         output = []
-
         for i in range(0, len(tagResult)):
             output.append(str((tagResult)[i].text))
 
@@ -88,48 +92,8 @@ class WebScraper():
     def printDataFrame(self):
         print(self.dataFrame)
 
-        
-# DataFrames Code
-webScraper = WebScraper()
-
-webScraper.webPageFromFile("GHGEmissions.html")
-
-relevantTags = ["th", "tr", "td"]
-
-for tag in relevantTags:
-    tableData = webScraper.extractTags(tag)
-    webScraper.cleanTags(tableData)
-
-originalDataFrame = webScraper.convertToPandasDataFrame()
-
-print(originalDataFrame)
-
-# Convert the 'Greenhouse gas emissions from agriculture' column from string to numeric
-originalDataFrame['Greenhouse gas emissions from agriculture'] = pd.to_numeric(originalDataFrame['Greenhouse gas emissions from agriculture'], errors='coerce')
-
-# Group each country with the agriculture emissions
-countryData = originalDataFrame.groupby('Entity')['Greenhouse gas emissions from agriculture']
-
-# Take the average
-averageEmissions = countryData.mean()
-
-# Create a new dataframe with that data
-averageEmissionsDataFrame = averageEmissions.reset_index()
-
-# Rename the columns
-averageEmissionsDataFrame.columns = ['Country', 'Average Agriculture Emissions']
-
-print(averageEmissionsDataFrame)
-
-
-
-import tkinter as tk
-from tkinter import ttk
-
-'''
-TKinter GUI to display the DataFrame
-'''
-def display_dataframe(df, title):
+#TKinter GUI to display a DataFrame
+def display_dataframe(df, title=" "):
     window = tk.Tk()
     window.title("DataFrame Display")
 
@@ -155,12 +119,30 @@ def display_dataframe(df, title):
 
     window.mainloop()
 
-# Main Code
-title = "Average Agriculture Emissions by Country"
-print(title)
-print(averageEmissionsDataFrame)
-#display_dataframe(averageEmissionsDataFrame, title)
+        
+# DataFrames creation code
+webScraper = WebScraper()
+webScraper.webPageFromFile("GHGEmissions.html")
+relevantTags = ["th", "tr", "td"]
 
+for tag in relevantTags:
+    tableData = webScraper.extractTags(tag)
+    webScraper.cleanTags(tableData)
+
+originalDataFrame = webScraper.convertToPandasDataFrame()
+#print(originalDataFrame)
+
+# Convert the 'Greenhouse gas emissions from agriculture' column from string to numeric
+originalDataFrame['Greenhouse gas emissions from agriculture'] = pd.to_numeric(originalDataFrame['Greenhouse gas emissions from agriculture'], errors='coerce')
+# Group each country with the agriculture emissions
+countryData = originalDataFrame.groupby('Entity')['Greenhouse gas emissions from agriculture']
+# Take the average
+averageEmissions = countryData.mean()
+# Create a new dataframe with that data
+averageEmissionsDataFrame = averageEmissions.reset_index()
+# Rename the columns
+averageEmissionsDataFrame.columns = ['Country', 'Average Agriculture Emissions']
+#display_dataframe(averageEmissionsDataFrame, title="Average Agricultural Emissions By Country")
 
 
 """
@@ -176,43 +158,47 @@ class PlotManager:
     def __str__(self):
         return f'PlotManager for DataFrame with {self.df.shape[0]} rows and {self.df.shape[1]} columns'
 
-    def linePlot(self, x=None, y=None, title="Line Plot", xlabel="X-axis", ylabel="Y-axis"):
-        if not x or not y:
-            x, y = self.df.columns[:2]
+    def linePlot(self, title=None):
+        x, y = self.df.columns[:2]
+        if not title:
+            title = f'{y} by {x}'
         plt.figure()
         plt.plot(self.df[x], self.df[y])
         plt.title(title)
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
+        plt.xlabel(x)
+        plt.ylabel(y)
         plt.show()
 
-    def barPlot(self, x=None, y=None, title=None, xlabel=None, ylabel=None):
-        if not x or not y:
-            x, y = self.df.columns[:2]
-        if not xlabel:
-            xlabel = x
-        if not ylabel:
-            ylabel = y
+    def barPlot(self, title=None):
+        x, y = self.df.columns[:2]
         if not title:
-            title = f'{ylabel} by {xlabel}'
+            title = f'{y} by {x}'
         plt.figure()
         plt.bar(self.df[x], self.df[y])
         plt.title(title)
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
+        plt.xlabel(x)
+        plt.ylabel(y)
         plt.show()
 
-    def scatterPlot(self, x=None, y=None, title="Scatter Plot", xlabel="X-axis", ylabel="Y-axis"):
-        if not x or not y:
-            x, y = self.df.columns[:2]
+    def scatterPlot(self, title=None):
+        x, y = self.df.columns[:2]
+        if not title:
+            title = f'{y} by {x}'
         plt.figure()
         plt.scatter(self.df[x], self.df[y])
         plt.title(title)
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
+        plt.xlabel(x)
+        plt.ylabel(y)
         plt.show()
 
-# Main Code
+        
+"""
+Main Code
+"""
+
+# averageEmissionsDataFrame created above
+print(averageEmissionsDataFrame)
+
 plotManager = PlotManager(averageEmissionsDataFrame)
 print(plotManager)
 plotManager.barPlot()
