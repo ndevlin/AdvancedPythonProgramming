@@ -1,12 +1,8 @@
 
-import socket
 import json
-from ByteStreams_May15_NDevlin import ByteStream
-from Databases_Refactor_May17 import SqliteManager
 import unittest
 import time
 from Client_RefactorJun3 import Client
-from Server_May21 import Server
 
 class TestSockets(unittest.TestCase):
     @classmethod
@@ -30,16 +26,28 @@ class TestSockets(unittest.TestCase):
             binaryData = textString.encode('utf-8') 
             file.write(binaryData)
         self.client.sendBinaryFile("testBinaryFile.bin")
-        # Add assertions here to verify the binary file was sent correctly
+        with open("testBinaryFile.bin", 'rb') as sent_file, open("receivedBinaryFile.bin", 'rb') as received_file:
+            sent_data = sent_file.read()
+            received_data = received_file.read()
+            self.assertEqual(sent_data, received_data, "The sent and received binary files are not the same.")
 
 
     def testSendTextFile(self):
-        filename = "Sockets_TestText_May21.txt"
+        filename = "Sockets_TestText_June3.txt"
         self.client.sendTextFile(filename)
-        # Add assertions here to verify the text file was sent correctly
+
+        expectedText = """To be, or not to be, that is the question:
+Whether 'tis nobler in the mind to suffer
+The slings and arrows of outrageous fortune,
+Or to take arms against a sea of troubles
+And by opposing end them."""
+        time.sleep(10) # Wait for the server to finish writing the file
+        with open("receivedTextFile.txt", 'r') as receivedFile:
+            receivedText = receivedFile.read()
+            self.assertEqual(receivedText, expectedText, "The received text file does not match the expected text.")
+
         self.client.sock.close()
 
-    
 
 if __name__ == '__main__':
     unittest.main()

@@ -3,3 +3,4 @@
 *.pyc
 testBinaryFile.bin
 receivedBinaryFile.bin
+receivedTextFile.txt

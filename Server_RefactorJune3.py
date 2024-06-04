@@ -67,15 +67,16 @@ class Server:
     def startReceiveTextFile(self):
         print("Attempting to Receive Text File")
         receivedData = ""
-        while receivedData.lower() != 'exit':
-            data = self.conn.recv(1024)
-            if data:
-                receivedData = data.decode('utf-8')
-                print(receivedData)
-                if receivedData.lower() == 'exit':
-                    print("Client exited")
-                    break
-
+        with open("receivedTextFile.txt", 'w') as file:
+            while receivedData.lower() != 'exit':
+                data = self.conn.recv(1024)
+                if data:
+                    receivedData = data.decode('utf-8')
+                    print(receivedData)
+                    if receivedData.lower() == 'exit':
+                        print("Client exited")
+                        break
+                    file.write(receivedData)
 
 
     def startReceiveBinaryFile(self, filename="receivedBinaryFile.bin"):
