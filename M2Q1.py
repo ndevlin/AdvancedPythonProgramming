@@ -8,15 +8,26 @@ import re
 import unittest
 
 class BaseConverter:
-    baseMap = {}
+    characterBaseToDecimalMap = {}
     for i in range(10):
-        baseMap[str(i)] = i
+        characterBaseToDecimalMap[str(i)] = i
     for i in range(10, 37):
         # Start with A at 10 since Ascii 65 is A
-        baseMap[chr(55 + i)] = i
-    reverseMap = {}
-    for k, v in baseMap.items():
-        reverseMap[v] = k
+        characterBaseToDecimalMap[chr(55 + i)] = i
+    decimalBaseToCharMap = {}
+    for k, v in characterBaseToDecimalMap.items():
+        decimalBaseToCharMap[v] = k
+    
+    '''
+    Converts an input base to its decimal numeric form
+    base: str or int, base to convert
+    return: int, decimal numeric form of the base
+    '''
+    def getBaseInDecimal(self, base):
+        if isinstance(base, str):
+            return self.characterBaseToDecimalMap[base]
+        else:
+            return base
 
     '''
     Convert a number in a given base to decimal numeric form
@@ -27,22 +38,23 @@ class BaseConverter:
         number, base = self.parseRepresentation(numberIn)
         decimal = 0
         for i, digit in enumerate(reversed(number)):
-            currValue = self.baseMap[digit]
+            currValue = self.characterBaseToDecimalMap[digit]
             decimal += currValue * (base ** i)
         return decimal
 
     '''
     Convert a decimal number to a given base
     numberIn: int, decimal numeric number
-    toBase: int, base to convert to
+    toBase: int or string, base to convert to
     return: str, number in the new base in string form with prefix
     '''
     def fromDecimal(self, numberIn, toBase):
+        toBase = self.getBaseInDecimal(toBase)
         digits = []
         number = numberIn
         while number > 0:
             number, remainder = divmod(number, toBase)
-            digits.append(self.reverseMap[remainder])
+            digits.append(self.decimalBaseToCharMap[remainder])
         digits = reversed(digits)
         result = ''.join(digits)
         return self.represent(result, toBase)
@@ -50,10 +62,11 @@ class BaseConverter:
     '''
     Convert a number from one base to another
     numberIn: str, number in its own base in string form with prefix
-    toBase: int, base to convert to
+    toBase: int or string, base to convert to
     return: str, number in the new base in string form
     '''
     def convert(self, numberIn, toBase):
+        toBase = self.getBaseInDecimal(toBase)
         decimal = self.toDecimal(numberIn)
         newVersion = self.fromDecimal(decimal, toBase)
         return newVersion
@@ -62,11 +75,12 @@ class BaseConverter:
     Create a string representation of a number indicating its base
     Base indicators are represented as "0", base character, "_", e.g. "02_", "03_", ..., "0A_", "0B_", ...
     number: str, number in its own base in string form, without prefixed base indicator
-    base: int, base of the number
+    base: int or string, base of the number
     return: str, base-prefixed string representation of the number
     '''
     def represent(self, number, base):
-        result = "0" + self.reverseMap[base] + "_" + number
+        base = self.getBaseInDecimal(base)
+        result = "0" + self.decimalBaseToCharMap[base] + "_" + number
         return result
     
     '''
@@ -79,7 +93,7 @@ class BaseConverter:
     '''
     def parseRepresentation(self, representation):
         baseChar, number = representation.split('_')
-        base = self.baseMap[baseChar[1]]    # Skip the 0
+        base = self.characterBaseToDecimalMap[baseChar[1]]    # Skip the 0
         return number, base
 
 
@@ -89,6 +103,20 @@ class TestBaseConverter(unittest.TestCase):
     def setUp(self):
         self.converter = BaseConverter()
 
+    def test_getBaseInDecimal(self):
+        self.assertEqual(self.converter.getBaseInDecimal('2'), 2)
+        self.assertEqual(self.converter.getBaseInDecimal('8'), 8)
+        self.assertEqual(self.converter.getBaseInDecimal('A'), 10)
+        self.assertEqual(self.converter.getBaseInDecimal('G'), 16)
+        self.assertEqual(self.converter.getBaseInDecimal('O'), 24)
+        self.assertEqual(self.converter.getBaseInDecimal('P'), 25)
+        self.assertEqual(self.converter.getBaseInDecimal(2), 2)
+        self.assertEqual(self.converter.getBaseInDecimal(8), 8)
+        self.assertEqual(self.converter.getBaseInDecimal(10), 10)
+        self.assertEqual(self.converter.getBaseInDecimal(16), 16)
+        self.assertEqual(self.converter.getBaseInDecimal(24), 24)
+        self.assertEqual(self.converter.getBaseInDecimal(25), 25)
+        print('\n', "test_getBaseInDecimal passed")
 
     def test_parseRepresentation(self):
         self.assertEqual(self.converter.parseRepresentation('02_100100'), ('100100', 2))
