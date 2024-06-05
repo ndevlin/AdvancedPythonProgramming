@@ -128,11 +128,11 @@ class TestBaseConverter(unittest.TestCase):
         print('\n', "test_parseRepresentation passed")
 
     def test_convert(self):
-        self.assertEqual(self.converter.convert('02_100100', 16), '0G_24')
+        self.assertEqual(self.converter.convert('02_100100', "G"), '0G_24')
         self.assertEqual(self.converter.convert('08_44', 10), '0A_36')
         self.assertEqual(self.converter.convert('0A_36', 2), '02_100100')
         self.assertEqual(self.converter.convert('0G_24', 8), '08_44')
-        self.assertEqual(self.converter.convert('0X_13', 35), '0Z_11')
+        self.assertEqual(self.converter.convert('0X_13', "Z"), '0Z_11')
         self.assertEqual(self.converter.convert('0Y_12', 35), '0Z_11')
         self.assertEqual(self.converter.convert('0Z_11', 2), '02_100100')
         print('\n', "test_convert passed")
@@ -178,5 +178,34 @@ class TestBaseConverter(unittest.TestCase):
         
 # Run tests
 if __name__ == '__main__':
-    unittest.main()
 
+    converter = BaseConverter()
+
+    numbers = [36, 123, 456]
+
+    bases = [2, 8, 16]
+
+    for number in numbers:
+        print(f"\nTesting number {number}:")
+
+        currNumber = converter.represent(str(number), 10)
+
+        # Convert the number to each base
+        for base in bases:
+            print(f"\nConverting {currNumber} to base {base}:")
+            numInBase = converter.convert(currNumber, base)
+            print(f"Number {currNumber} in base {base} is {numInBase}")
+            currNumber = numInBase
+
+        print(f"\nConverting {currNumber} back to base 10:")
+        numInDecimal = converter.toDecimal(currNumber)
+        print(f"Number {currNumber} is {numInDecimal} in decimal")
+
+        # Check if the number is the same after converting back to base 10
+        if numInDecimal == number:
+            print(f"Success: {numInDecimal} == {numInDecimal}")
+        else:
+            print(f"Failure: {numInDecimal} != {numInDecimal}")
+
+    # Run the unit tests
+    unittest.main()
