@@ -21,23 +21,31 @@ class BaseConverter:
     number: str, number in the given base in string form
     base: int, base of the number
     '''
-    def toDecimal(self, number, base):
+    def toDecimal(self, numberIn, base):
         base_10 = 0
-        for i, digit in enumerate(reversed(number)):
+        for i, digit in enumerate(reversed(numberIn)):
             currValue = self.baseMap[digit]
             base_10 += currValue * (base ** i)
         return base_10
 
-    def from_decimal(self, number, base):
+    '''
+    Convert a decimal number to a given base
+    numberIn: int, decimal number
+    base: int, base to convert to
+    '''
+    def fromDecimal(self, numberIn, base):
         digits = []
+        number = numberIn
         while number > 0:
             number, remainder = divmod(number, base)
             digits.append(self.reverseMap[remainder])
-        return ''.join(reversed(digits))
+        digits = reversed(digits)
+        result = ''.join(digits)
+        return result
 
     def convert(self, number, from_base, to_base):
         decimal = self.toDecimal(number, from_base)
-        return self.from_decimal(decimal, to_base)
+        return self.fromDecimal(decimal, to_base)
 
     def represent(self, number, base):
         return f"0{self.reverseMap[base]}_{number}"
@@ -70,23 +78,23 @@ class TestBaseConverter(unittest.TestCase):
         print("test_toDecimal passed")
 
     def test_decimal_36(self):
-        self.assertEqual(self.converter.from_decimal(36, 2), '100100')
-        self.assertEqual(self.converter.from_decimal(36, 8), '44')
-        self.assertEqual(self.converter.from_decimal(36, 10), '36')
-        self.assertEqual(self.converter.from_decimal(36, 16), '24')
-        self.assertEqual(self.converter.from_decimal(36, 33), '13')
-        self.assertEqual(self.converter.from_decimal(36, 34), '12')
-        self.assertEqual(self.converter.from_decimal(36, 35), '11')
+        self.assertEqual(self.converter.fromDecimal(36, 2), '100100')
+        self.assertEqual(self.converter.fromDecimal(36, 8), '44')
+        self.assertEqual(self.converter.fromDecimal(36, 10), '36')
+        self.assertEqual(self.converter.fromDecimal(36, 16), '24')
+        self.assertEqual(self.converter.fromDecimal(36, 33), '13')
+        self.assertEqual(self.converter.fromDecimal(36, 34), '12')
+        self.assertEqual(self.converter.fromDecimal(36, 35), '11')
         print("test_decimal_36 passed")
 
 
     def test_decimal_123(self):
-        self.assertEqual(self.converter.from_decimal(123, 2), '1111011')
-        self.assertEqual(self.converter.from_decimal(123, 8), '173')
-        self.assertEqual(self.converter.from_decimal(123, 16), '7B')
-        self.assertEqual(self.converter.from_decimal(123, 26), '4J')
-        self.assertEqual(self.converter.from_decimal(123, 33), '3O')
-        self.assertEqual(self.converter.from_decimal(123, 35), '3I')
+        self.assertEqual(self.converter.fromDecimal(123, 2), '1111011')
+        self.assertEqual(self.converter.fromDecimal(123, 8), '173')
+        self.assertEqual(self.converter.fromDecimal(123, 16), '7B')
+        self.assertEqual(self.converter.fromDecimal(123, 26), '4J')
+        self.assertEqual(self.converter.fromDecimal(123, 33), '3O')
+        self.assertEqual(self.converter.fromDecimal(123, 35), '3I')
         print("test_decimal_123 passed")
         
 
