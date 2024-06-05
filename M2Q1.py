@@ -11,6 +11,7 @@ class BaseConverter:
     for i in range(10):
         baseMap[str(i)] = i
     for i in range(10, 37):
+        # Start with A at 10 since Ascii 65 is A
         baseMap[chr(55 + i)] = i
     reverseMap = {}
     for k, v in baseMap.items():
@@ -43,9 +44,15 @@ class BaseConverter:
         result = ''.join(digits)
         return result
 
-    def convert(self, number, from_base, to_base):
-        decimal = self.toDecimal(number, from_base)
-        return self.fromDecimal(decimal, to_base)
+    '''
+    Convert a number from one base to another
+    number: str, number in its own base in string form
+    fromBase: int, base of the incoming number
+    toBase: int, base to convert to
+    '''
+    def convert(self, number, fromBase, toBase):
+        decimal = self.toDecimal(number, fromBase)
+        return self.fromDecimal(decimal, toBase)
 
     '''
     Create a string representation of a number indicating its base
@@ -73,6 +80,15 @@ import unittest
 class TestBaseConverter(unittest.TestCase):
     def setUp(self):
         self.converter = BaseConverter()
+
+    def test_convert(self):
+        self.assertEqual(self.converter.convert('100100', 2, 16), '24')
+        self.assertEqual(self.converter.convert('44', 8, 10), '36')
+        self.assertEqual(self.converter.convert('36', 10, 2), '100100')
+        self.assertEqual(self.converter.convert('24', 16, 8), '44')
+        self.assertEqual(self.converter.convert('13', 33, 35), '11')
+        self.assertEqual(self.converter.convert('12', 34, 35), '11')
+        self.assertEqual(self.converter.convert('11', 35, 2), '100100')
 
     def test_represent(self):
         self.assertEqual(self.converter.represent('100100', 2), '02_100100')
