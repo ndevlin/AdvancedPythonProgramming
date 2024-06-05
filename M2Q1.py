@@ -47,8 +47,15 @@ class BaseConverter:
         decimal = self.toDecimal(number, from_base)
         return self.fromDecimal(decimal, to_base)
 
+    '''
+    Create a string representation of a number indicating its base
+    number: str, number in its own base in string form, without prepended base indicator
+    base: int, base of the number
+    '''
     def represent(self, number, base):
-        return f"0{self.reverseMap[base]}_{number}"
+        result = "0" + self.reverseMap[base] + "_" + number
+        return result
+
 
     def convert_bases(self, number):
         match = re.match(r'0([0-9A-Z])_(\w+)', number)
@@ -66,6 +73,15 @@ import unittest
 class TestBaseConverter(unittest.TestCase):
     def setUp(self):
         self.converter = BaseConverter()
+
+    def test_represent(self):
+        self.assertEqual(self.converter.represent('100100', 2), '02_100100')
+        self.assertEqual(self.converter.represent('44', 8), '08_44')
+        self.assertEqual(self.converter.represent('36', 10), '0A_36')
+        self.assertEqual(self.converter.represent('24', 16), '0G_24')
+        self.assertEqual(self.converter.represent('12', 24), '0O_12')
+        self.assertEqual(self.converter.represent('11', 25), '0P_11')
+        self.assertEqual(self.converter.represent('10', 35), '0Z_10')
 
     def test_toDecimal(self):
         self.assertEqual(self.converter.toDecimal('100100', 2), 36)
