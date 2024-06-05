@@ -5,6 +5,7 @@ June 4 2024
 """
 
 import re
+import unittest
 
 class BaseConverter:
     baseMap = {}
@@ -62,24 +63,34 @@ class BaseConverter:
     def represent(self, number, base):
         result = "0" + self.reverseMap[base] + "_" + number
         return result
-
-
-    def convert_bases(self, number):
-        match = re.match(r'0([0-9A-Z])_(\w+)', number)
-        from_base = self.baseMap[match.group(1)]
-        number = match.group(2)
-        to_base = self.baseMap['Q']
-        converted_number = self.convert(number, from_base, to_base)
-        return self.represent(converted_number, to_base)
     
+    '''
+    The opposite of the represent function; 
+    takes in a prefixed string e.g. 0A_36, 
+    and returns the number in string form and its base in decimal numeric form
+    as a tuple, e.g. ('36', 10)
+    representation: str, base-prefixed string representation of the number
+    '''
+    def parseRepresentation(self, representation):
+        baseChar, number = representation.split('_')
+        base = self.baseMap[baseChar[1]]    # Skip the 0
+        return number, base
 
-# Main code
 
-import unittest
+# Testing code
 
 class TestBaseConverter(unittest.TestCase):
     def setUp(self):
         self.converter = BaseConverter()
+
+    def test_parseRepresentation(self):
+        self.assertEqual(self.converter.parseRepresentation('02_100100'), ('100100', 2))
+        self.assertEqual(self.converter.parseRepresentation('08_44'), ('44', 8))
+        self.assertEqual(self.converter.parseRepresentation('0A_36'), ('36', 10))
+        self.assertEqual(self.converter.parseRepresentation('0G_24'), ('24', 16))
+        self.assertEqual(self.converter.parseRepresentation('0O_13'), ('13', 24))
+        self.assertEqual(self.converter.parseRepresentation('0P_12'), ('12', 25))
+        print('\n', "test_parseRepresentation passed")
 
     def test_convert(self):
         self.assertEqual(self.converter.convert('100100', 2, 16), '24')
@@ -89,6 +100,7 @@ class TestBaseConverter(unittest.TestCase):
         self.assertEqual(self.converter.convert('13', 33, 35), '11')
         self.assertEqual(self.converter.convert('12', 34, 35), '11')
         self.assertEqual(self.converter.convert('11', 35, 2), '100100')
+        print('\n', "test_convert passed")
 
     def test_represent(self):
         self.assertEqual(self.converter.represent('100100', 2), '02_100100')
@@ -98,6 +110,7 @@ class TestBaseConverter(unittest.TestCase):
         self.assertEqual(self.converter.represent('12', 24), '0O_12')
         self.assertEqual(self.converter.represent('11', 25), '0P_11')
         self.assertEqual(self.converter.represent('10', 35), '0Z_10')
+        print('\n', "test_represent passed")
 
     def test_toDecimal(self):
         self.assertEqual(self.converter.toDecimal('100100', 2), 36)
@@ -107,7 +120,7 @@ class TestBaseConverter(unittest.TestCase):
         self.assertEqual(self.converter.toDecimal('13', 33), 36)
         self.assertEqual(self.converter.toDecimal('12', 34), 36)
         self.assertEqual(self.converter.toDecimal('11', 35), 36)
-        print("test_toDecimal passed")
+        print('\n', "test_toDecimal passed")
 
     def test_decimal_36(self):
         self.assertEqual(self.converter.fromDecimal(36, 2), '100100')
@@ -117,8 +130,7 @@ class TestBaseConverter(unittest.TestCase):
         self.assertEqual(self.converter.fromDecimal(36, 33), '13')
         self.assertEqual(self.converter.fromDecimal(36, 34), '12')
         self.assertEqual(self.converter.fromDecimal(36, 35), '11')
-        print("test_decimal_36 passed")
-
+        print('\n', "test_decimal_36 passed")
 
     def test_decimal_123(self):
         self.assertEqual(self.converter.fromDecimal(123, 2), '1111011')
@@ -127,9 +139,9 @@ class TestBaseConverter(unittest.TestCase):
         self.assertEqual(self.converter.fromDecimal(123, 26), '4J')
         self.assertEqual(self.converter.fromDecimal(123, 33), '3O')
         self.assertEqual(self.converter.fromDecimal(123, 35), '3I')
-        print("test_decimal_123 passed")
+        print('\n', "test_decimal_123 passed")
         
-
+# Run tests
 if __name__ == '__main__':
     unittest.main()
 
