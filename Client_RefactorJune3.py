@@ -5,11 +5,8 @@ June 3 Refactor 2024
 """
 
 import socket
-import json
-import unittest
 import time
 from ByteStreams_May15_NDevlin import ByteStream
-from Databases_Refactor_May17 import SqliteManager
 
 class Client:
     def __init__(self):
@@ -78,7 +75,6 @@ class Client:
             time.sleep(1)
         print("File sent")
 
-    
     def exit(self):
         print("Exiting")
         self.sendMessage("exit")
