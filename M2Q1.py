@@ -64,8 +64,9 @@ class TestBaseConverter(unittest.TestCase):
         self.assertEqual(self.converter.toDecimal('44', 8), 36)
         self.assertEqual(self.converter.toDecimal('36', 10), 36)
         self.assertEqual(self.converter.toDecimal('24', 16), 36)
-        #self.assertEqual(self.converter.toDecimal('11', 34), 36)
-        #self.assertEqual(self.converter.toDecimal('10', 36), 36)
+        self.assertEqual(self.converter.toDecimal('13', 33), 36)
+        self.assertEqual(self.converter.toDecimal('12', 34), 36)
+        self.assertEqual(self.converter.toDecimal('11', 35), 36)
         print("test_toDecimal passed")
 
     def test_decimal_36(self):
@@ -73,19 +74,21 @@ class TestBaseConverter(unittest.TestCase):
         self.assertEqual(self.converter.from_decimal(36, 8), '44')
         self.assertEqual(self.converter.from_decimal(36, 10), '36')
         self.assertEqual(self.converter.from_decimal(36, 16), '24')
-        self.assertEqual(self.converter.from_decimal(36, 24), '12')
-        self.assertEqual(self.converter.from_decimal(36, 25), '11')
-        self.assertEqual(self.converter.from_decimal(36, 36), '10')
+        self.assertEqual(self.converter.from_decimal(36, 33), '13')
+        self.assertEqual(self.converter.from_decimal(36, 34), '12')
+        self.assertEqual(self.converter.from_decimal(36, 35), '11')
         print("test_decimal_36 passed")
+
 
     def test_decimal_123(self):
         self.assertEqual(self.converter.from_decimal(123, 2), '1111011')
         self.assertEqual(self.converter.from_decimal(123, 8), '173')
         self.assertEqual(self.converter.from_decimal(123, 16), '7B')
-        self.assertEqual(self.converter.from_decimal(123, 26), '4I')
-        self.assertEqual(self.converter.from_decimal(123, 24), '3D')
-        self.assertEqual(self.converter.from_decimal(123, 36), '3F')
+        self.assertEqual(self.converter.from_decimal(123, 26), '4J')
+        self.assertEqual(self.converter.from_decimal(123, 33), '3O')
+        self.assertEqual(self.converter.from_decimal(123, 35), '3I')
         print("test_decimal_123 passed")
+        
 
 if __name__ == '__main__':
     unittest.main()
