@@ -23,15 +23,18 @@ import unittest
 
 class BaseConverter:
     characterBaseToDecimalMap = {}
-    for i in range(10):
-        characterBaseToDecimalMap[str(i)] = i
-    for i in range(10, 37):
-        # Start with A at 10 since Ascii 65 is A
-        characterBaseToDecimalMap[chr(55 + i)] = i
     decimalBaseToCharMap = {}
-    for k, v in characterBaseToDecimalMap.items():
-        decimalBaseToCharMap[v] = k
+
+    def __init__(self):
+        for i in range(10):
+            self.characterBaseToDecimalMap[str(i)] = i
+        for i in range(10, 37):
+            # Start with A at 10 since Ascii 65 is A
+            self.characterBaseToDecimalMap[chr(55 + i)] = i
+        for k, v in self.characterBaseToDecimalMap.items():
+            self.decimalBaseToCharMap[v] = k
     
+
     '''
     Converts an input base to its decimal numeric form
     base: str or int, base to convert
