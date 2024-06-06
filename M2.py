@@ -272,14 +272,16 @@ class BaseXNumber:
         return self.numberInDecimal
 
 
+    # 3
 
+# Note that the instructions are ambiguous as to whether to return
+# a decimal string of the form "0A_36" for example, or a numeric decimal number,
+# I have chosen to return the latter. If the former is desired, the user could use
+# the fromDecimal function of the BaseConverter class
+# Also note that this code is intended to go in the BaseXNumber class,
+# so I have indented it accordingly
 
-    # Note that the instructions are ambiguous as to whether to return
-    # a decimal string of the form "0A_36" for example, or a numeric decimal number,
-    # I have chosen to return the latter. If the former is desired, the user could use
-    # the fromDecimal function of the BaseConverter class
-
-    # Allows adding, sub, mult, mod with multiple types of data
+    # Allows adding, subtracting, multiplying, mod-ing with multiple types of data
     def convertOtherToDecimal(self, other):
         otherInDecimal = 0
         if isinstance(other, BaseXNumber):
@@ -289,7 +291,7 @@ class BaseXNumber:
         elif isinstance(other, str):
             otherInDecimal = self.converter.toDecimal(other)
         else:
-            raise ValueError("Input must be a BaseX number, a string, or an integer")
+            raise ValueError("Input must be a BaseXNumber, a string, or an integer")
         return otherInDecimal
 
     def __add__(self, other):
