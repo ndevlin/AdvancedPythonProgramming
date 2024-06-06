@@ -272,7 +272,56 @@ class BaseXNumber:
         return self.numberInDecimal
 
 
-'''
+
+
+    # Note that the instructions are ambiguous as to whether to return
+    # a decimal string of the form "0A_36" for example, or a numeric decimal number,
+    # I have chosen to return the latter. If the former is desired, the user could use
+    # the fromDecimal function of the BaseConverter class
+
+    # Allows adding, sub, mult, mod with multiple types of data
+    def convertOtherToDecimal(self, other):
+        otherInDecimal = 0
+        if isinstance(other, BaseXNumber):
+            otherInDecimal = other.getInNumericDecimal()
+        elif isinstance(other, int):
+            otherInDecimal = other
+        elif isinstance(other, str):
+            otherInDecimal = self.converter.toDecimal(other)
+        else:
+            raise ValueError("Input must be a BaseX number, a string, or an integer")
+        return otherInDecimal
+
+    def __add__(self, other):
+        otherInDecimal = self.convertOtherToDecimal(other)
+        return self.numberInDecimal + otherInDecimal
+
+    def __sub__(self, other):
+        otherInDecimal = self.convertOtherToDecimal(other)
+        return self.numberInDecimal - otherInDecimal
+    
+    def __mul__(self, other):
+        otherInDecimal = self.convertOtherToDecimal(other)
+        return self.numberInDecimal * otherInDecimal
+    
+    def __mod__(self, other):
+        otherInDecimal = self.convertOtherToDecimal(other)
+        return self.numberInDecimal % otherInDecimal
+    
+    def __truediv__(self, other):
+        otherInDecimal = self.convertOtherToDecimal(other)
+        return self.numberInDecimal / otherInDecimal
+    
+    def __eq__(self, other):
+        otherInDecimal = self.convertOtherToDecimal(other)
+        return self.numberInDecimal == otherInDecimal
+    
+    def __ne__(self, other):
+        otherInDecimal = self.convertOtherToDecimal(other)
+        return self.numberInDecimal != otherInDecimal
+
+
+
 # BaseXNumber Testing code
 import unittest
 
@@ -306,9 +355,65 @@ class TestBaseXNumber(unittest.TestCase):
         num = BaseXNumber("02_100100")
         self.assertEqual(num.getInNumericDecimal(), 36)
 
+
+
+    def test_convertOtherToDecimal(self):
+        num = BaseXNumber("0A_10")
+        self.assertEqual(num.convertOtherToDecimal(10), 10)
+        self.assertEqual(num.convertOtherToDecimal("0A_10"), 10)
+        self.assertEqual(num.convertOtherToDecimal(BaseXNumber("0A_10")), 10)
+        with self.assertRaises(ValueError):
+            num.convertOtherToDecimal([])
+
+    def test_arithmetic_operations(self):
+        num1 = BaseXNumber("0A_10")
+        num2 = BaseXNumber("0A_20")
+        self.assertEqual(num1 + num2, 30)
+        self.assertEqual(num1 - num2, -10)
+        self.assertEqual(num1 * num2, 200)
+        self.assertEqual(num1 % num2, 10)
+        self.assertEqual(num1 / num2, 0.5)
+        num2 = "0A_20"
+        self.assertEqual(num1 + num2, 30)
+        self.assertEqual(num1 - num2, -10)
+        self.assertEqual(num1 * num2, 200)
+        self.assertEqual(num1 % num2, 10)
+        self.assertEqual(num1 / num2, 0.5)
+        num2 = 20
+        self.assertEqual(num1 + num2, 30)
+        self.assertEqual(num1 - num2, -10)
+        self.assertEqual(num1 * num2, 200)
+        self.assertEqual(num1 % num2, 10)
+        self.assertEqual(num1 / num2, 0.5)
+
+    def test_equality_operations(self):
+        num1 = BaseXNumber("0A_10")
+        num2 = BaseXNumber("0A_10")
+        num3 = BaseXNumber("0A_20")
+        self.assertTrue(num1 == num2)
+        self.assertFalse(num1 != num2)
+        self.assertFalse(num1 == num3)
+        self.assertTrue(num1 != num3)
+
+    def test_arithmetic_operations_with_other_types(self):
+        num = BaseXNumber("0A_10")
+        self.assertEqual(num + 10, 20)
+        self.assertEqual(num - 10, 0)
+        self.assertEqual(num * 10, 100)
+        self.assertEqual(num % 10, 0)
+        self.assertEqual(num / 10, 1.0)
+
+    def test_equality_operations_with_other_types(self):
+        num = BaseXNumber("0A_10")
+        self.assertTrue(num == 10)
+        self.assertFalse(num != 10)
+        self.assertFalse(num == 20)
+        self.assertTrue(num != 20)
+
 if __name__ == '__main__':
     unittest.main()
-'''
+
+
 
 
 
