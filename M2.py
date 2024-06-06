@@ -69,6 +69,8 @@ class BaseConverter:
         toBase = self.getBaseInDecimal(toBase)
         digits = []
         number = numberIn
+        if number == 0:
+            return self.represent("0", toBase)
         while number > 0:
             number, remainder = divmod(number, toBase)
             digits.append(self.decimalBaseToCharMap[remainder])
@@ -232,5 +234,82 @@ if __name__ == '__main__':
 """
 2
 """
+
+
+# Calling the class BaseXNumber instead of BaseXDigit
+class BaseXNumber:
+    converter = BaseConverter()
+    fullBaseXString = ""
+    baseTypeInString = ""
+    baseTypeInDecimal = 10
+    numberInDecimal = 0
+    numberInBaseString = ""
+    numberInDecimalString = ""
+
+    def __init__(self, fullBaseXString="0A_0"):
+        if not type(fullBaseXString) == str:
+            raise ValueError("Input must be a BaseX number formatted properly, as a string")
+        self.fullBaseXString = fullBaseXString
+        self.baseTypeInString = fullBaseXString[1]
+        self.baseTypeInDecimal = self.converter.getBaseInDecimal(self.baseTypeInString)
+        self.numberInBaseString = fullBaseXString[3:]
+        self.numberInDecimal = self.converter.toDecimal(fullBaseXString)
+        self.numberInDecimalString = self.converter.fromDecimal(self.numberInDecimal, 10)
+    
+    def __str__(self):
+        return self.numberInDecimalString
+
+    def __repr__(self):
+        return self.numberInDecimalString
+    
+    def get(self):
+        return self.numberInDecimalString
+    
+    def getNumberInOriginalBase(self):
+        return self.fullBaseXString
+    
+    def getInNumericDecimal(self):
+        return self.numberInDecimal
+
+
+'''
+# BaseXNumber Testing code
+import unittest
+
+class TestBaseXNumber(unittest.TestCase):
+    def test_initialization(self):
+        num = BaseXNumber("02_100100")
+        self.assertEqual(num.fullBaseXString, "02_100100")
+        self.assertEqual(num.baseTypeInString, "2")
+        self.assertEqual(num.baseTypeInDecimal, 2)
+        self.assertEqual(num.numberInBaseString, "100100")
+        self.assertEqual(num.numberInDecimal, 36)
+        self.assertEqual(num.numberInDecimalString, "0A_36")
+
+    def test_str(self):
+        num = BaseXNumber("02_100100")
+        self.assertEqual(str(num), "0A_36")
+
+    def test_repr(self):
+        num = BaseXNumber("02_100100")
+        self.assertEqual(repr(num), "0A_36")
+
+    def test_get(self):
+        num = BaseXNumber("02_100100")
+        self.assertEqual(num.get(), "0A_36")
+
+    def test_getNumberInOriginalBase(self):
+        num = BaseXNumber("02_100100")
+        self.assertEqual(num.getNumberInOriginalBase(), "02_100100")
+
+    def test_getInNumericDecimal(self):
+        num = BaseXNumber("02_100100")
+        self.assertEqual(num.getInNumericDecimal(), 36)
+
+if __name__ == '__main__':
+    unittest.main()
+'''
+
+
 
 
