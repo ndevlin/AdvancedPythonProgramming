@@ -6,37 +6,16 @@ June 6 2024
 
 
 """
-Q1
-Hello, it seems like baseZ should be considered base 35, rather than base 36. 
-It seems it should be 
-A 10
-B 11
-C 12
-D 13
-E 14
-F 15
-G 16
-H 17
-I 18
-J 19
-K 20
-L 21
-M 22
-N 23
-O 24
-P 25
-Q 26
-R 27
-S 28
-T 29
-U 30
-V 31
-W 32
-X 33
-Y 34
-Z 35
-It seems that some of the test case examples given in the prompt towards the ends 
-are incorrect and are off by one because of this
+Note: 
+It seems like baseZ should be considered base 35, rather than base 36.
+There would need to be some additional letter between H=17 and Z otherwise.
+It seems it should be 
+A 10, B 11, C 12, D 13, E 14, F 15, G 16, H 17, I 18, J 19, K 20, L 21, M 22, 
+N 23, O 24, P 25, Q 26, R 27, S 28, T 29, U 30, V 31, W 32, X 33, Y 34, Z 35
+It seems that some of the test case examples given in the prompt towards the ends 
+are are off by one because of this. 
+However, I have included the ability to use a Base "[", i.e. Base36, which is the next 
+char after "Z" in the Ascii table, as base 36 in case we wanted that.
 """
 
 import re
@@ -132,8 +111,8 @@ class BaseConverter:
         return number, base
 
 
+'''
 # Base Converter Testing code
-
 class TestBaseConverter(unittest.TestCase):
     def setUp(self):
         self.converter = BaseConverter()
@@ -210,8 +189,6 @@ class TestBaseConverter(unittest.TestCase):
         self.assertEqual(self.converter.fromDecimal(123, 33), '0X_3O')
         self.assertEqual(self.converter.fromDecimal(123, 35), '0Z_3I')
         print('\n', "test_decimal_123 passed")
-        
-
 
 # Main Q1
 if __name__ == '__main__':
@@ -246,12 +223,11 @@ if __name__ == '__main__':
 
     # Run the unit tests
     unittest.main()
-
-
+'''
 
 
 """
-Q2
+2
 """
 
 
