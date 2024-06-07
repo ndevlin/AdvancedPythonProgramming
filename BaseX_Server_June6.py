@@ -226,34 +226,44 @@ class Server:
         self.conn, addr = self.sock.accept()
         print("Connected...")
 
-    def startInteractive(self):
-        print("Interactive Chat")
-        try:
-            userInput = ''
-            while userInput.lower() != 'exit':
-                data = self.conn.recv(1024)
-                if data:
-                    response = data.decode('utf-8')
-                    print("Client:", response)
-                    if response.lower() == 'exit':
-                        print("Client exited")
-                        break
-                    userInput = input("Server: ")
-                    self.conn.sendall(userInput.encode('utf-8'))
-            print("Exiting")
-            print("Closing Connection")
-            self.conn.close()
-        except:
-            print("Closing Connection")
-            self.conn.close()
-    
-    def close(self):
+    def processClientMessage(self, clientMessage):
+        # Split the message into number1, number2, and operation
+        number1, number2, operation = clientMessage.split(',')
+        number1 = BaseXNumber(number1)
+        number2 = BaseXNumber(number2)
+        result = 0
+        if operation == 'add':
+            result = number1 + number2
+        elif operation == 'sub':
+            result = number1 - number2
+        elif operation == 'mul':
+            result = number1 * number2
+        elif operation == 'mod':
+            result = number1 % number2
+        result = BaseXNumber(result)
+        result = result.getNumberInOriginalBase()
+        return result
+
+    def startProcessing(self):
+        print("Start Processing")
+        serverMessage = ''
+        while True:
+            data = self.conn.recv(1024)
+            if data:
+                clientResponse = data.decode('utf-8')
+                print("Client:", clientResponse)
+                if clientResponse.lower() == 'exit':
+                    print("Client exited")
+                    break
+                serverMessage = self.processClientMessage(clientResponse)
+                print("Server:", serverMessage)
+                self.conn.sendall(serverMessage.encode('utf-8'))
+        print("Exiting")
         print("Closing Connection")
         self.conn.close()
-
 
 if __name__ == '__main__':
 
     server = Server()
-    server.startInteractive()
+    server.startProcessing()
     server.close()

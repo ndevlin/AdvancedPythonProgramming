@@ -11,29 +11,12 @@ class Client:
     def connect(self):
         self.sock.connect(('localhost', 12346))
         self.connected = True
+        print("Connected to server...")
 
     def sendMessage(self, message):
         self.sock.sendall(message.encode('utf-8'))
         response = self.sock.recv(1024)
         return response.decode('utf-8')
-    
-    def interactiveModeStart(self):
-        print("Connected to server...")
-        toSend = ''
-        while True:
-            print("Enter three comma-separated values: number1, number2, operation")
-            toSend += input()
-            if 'exit' in toSend.lower():
-                self.exit()
-                break
-            else:
-                result = self.sendMessage(toSend)
-                if result.lower() == "exit":
-                    print("Server exited")
-                    print("Closing Connection")
-                    self.sock.close()
-                    break
-                print("Result:", result)
 
     def exit(self):
         print("Exiting")
@@ -43,24 +26,43 @@ class Client:
 
 
 class TestBaseXSystem(unittest.TestCase):
-    def setUpClass(cls):
-        cls.client = Client()
+    def setUp(self):
+        self.client = Client()
         print("Creating client...")
-        cls.client.connect()
+        self.client.connect()
 
     def testAdditionAndSubtraction(self):
-        self.assertEqual(1, 1)
+        
+        # You could change the values of bP and bJ to test different values
+        print("Note that the default of bP is 678 in decimal form, and bJ is 3408 in decimal form")
+        bP = "0P_123"
+        bPInDecimal = 678
+        bJ = "0J_987"
+        bJInDecimal = 3408
+        print("Add and Subtract Test")
+        print(f'Adding {bP} and {bJ}')
+        
+        print("Add bP and bJ")
+        toSend = bP + "," + bJ + ",add"
+        print("Send '", toSend, "' to server")
+        result = self.client.sendMessage(toSend)
+        print("Result:", result)
+        print("Subtract bJ from the result")
+        print("Send '", result, bJ, ",sub' to server")
+        toSend = result + "," + bJ + ",sub"
+        result = self.client.sendMessage(toSend)
+        print("Result:", result)
+        
+        # Convert the result to a decimal int
+        result = int(result.split('_')[1])
+        print(bPInDecimal, "==", result, "?")
+        self.assertEqual(bPInDecimal, result)
         print("Addition and Subtraction Test Passed")
         
-        
-        #self.client.sock.close()
+        self.client.sock.close()
 
 
 # Run the tests
 if __name__ == '__main__':
-
-    client = Client()
-    client.connect()
-    client.interactiveModeStart()
 
     unittest.main()
