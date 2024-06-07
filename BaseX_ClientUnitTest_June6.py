@@ -1,4 +1,7 @@
 
+# The below code is the Client half of the Server/Client based tests for the BaseX System
+# It is assumed this code is in a separate file, and that it will be run after the Server code is run
+
 import unittest
 import socket
 

@@ -205,6 +205,8 @@ class BaseXNumber:
 
 
 # The instructions are not very clear as to what is desired, so I will interpret it as follows:
+# I will do some testing below to validate that the BaseX System works as expected
+# Then I will do a test modeled after the given example that is done across a server and client
 # The Client provides two numbers in baseX string form, e.g. "0P_123", and "0J_987", 
 # and an operation to do with them, such as addition or subtraction, and the Server will return the result
 # as a baseX string in decimal i.e. baseA, e.g. "0A_1110".
@@ -212,8 +214,11 @@ class BaseXNumber:
 # where number1 and number2 are in baseX string form, and operation is a string, either "add", "sub", "mul" or "mod".
 # For example, "0A_1,02_10,add". The Server will then send back a string in baseA form.
 
+
+# I am assuming that the Server code, below, goes with the above Base X system code
+# When testing, it should be run first
+
 import socket
-import re
 
 class Server:
     def __init__(self):
