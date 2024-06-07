@@ -131,14 +131,18 @@ class BaseXNumber:
     numberInBaseString = ""
     numberInDecimalString = ""
 
-    def __init__(self, fullBaseXString="0A_0"):
-        if not type(fullBaseXString) == str:
-            raise ValueError("Input must be a BaseX number formatted properly, as a string")
-        self.fullBaseXString = fullBaseXString
-        self.baseTypeInString = fullBaseXString[1]
+    def __init__(self, input="0A_0"):
+        if isinstance(input, BaseXNumber):
+            input = input.getNumberInOriginalBase()
+        elif isinstance(input, int):
+            input = self.converter.fromDecimal(input, 10)
+        if not type(input) == str:
+            raise ValueError("Input must be a BaseXNumber, a string, or an int")
+        self.fullBaseXString = input
+        self.baseTypeInString = input[1]
         self.baseTypeInDecimal = self.converter.getBaseInDecimal(self.baseTypeInString)
-        self.numberInBaseString = fullBaseXString[3:]
-        self.numberInDecimal = self.converter.toDecimal(fullBaseXString)
+        self.numberInBaseString = input[3:]
+        self.numberInDecimal = self.converter.toDecimal(input)
         self.numberInDecimalString = self.converter.fromDecimal(self.numberInDecimal, 10)
     
     def __str__(self):
@@ -182,30 +186,58 @@ class BaseXNumber:
     def __add__(self, other):
         otherInDecimal = self.convertOtherToDecimal(other)
         return self.numberInDecimal + otherInDecimal
+    
+    def __radd__(self, other):
+        otherInDecimal = self.convertOtherToDecimal(other)
+        return otherInDecimal + self.numberInDecimal
 
     def __sub__(self, other):
         otherInDecimal = self.convertOtherToDecimal(other)
         return self.numberInDecimal - otherInDecimal
     
+    def __rsub__(self, other):
+        otherInDecimal = self.convertOtherToDecimal(other)
+        return otherInDecimal - self.numberInDecimal
+    
     def __mul__(self, other):
         otherInDecimal = self.convertOtherToDecimal(other)
         return self.numberInDecimal * otherInDecimal
+    
+    def __rmul__(self, other):
+        otherInDecimal = self.convertOtherToDecimal(other)
+        return otherInDecimal * self.numberInDecimal
     
     def __mod__(self, other):
         otherInDecimal = self.convertOtherToDecimal(other)
         return self.numberInDecimal % otherInDecimal
     
+    def __rmod__(self, other):
+        otherInDecimal = self.convertOtherToDecimal(other)
+        return otherInDecimal % self.numberInDecimal
+    
     def __truediv__(self, other):
         otherInDecimal = self.convertOtherToDecimal(other)
         return self.numberInDecimal / otherInDecimal
+    
+    def __rtruediv__(self, other):
+        otherInDecimal = self.convertOtherToDecimal(other)
+        return otherInDecimal / self.numberInDecimal
     
     def __eq__(self, other):
         otherInDecimal = self.convertOtherToDecimal(other)
         return self.numberInDecimal == otherInDecimal
     
+    def __req__(self, other):
+        otherInDecimal = self.convertOtherToDecimal(other)
+        return otherInDecimal == self.numberInDecimal
+    
     def __ne__(self, other):
         otherInDecimal = self.convertOtherToDecimal(other)
         return self.numberInDecimal != otherInDecimal
+    
+    def __rne__(self, other):
+        otherInDecimal = self.convertOtherToDecimal(other)
+        return otherInDecimal != self.numberInDecimal
 
 
 
@@ -410,6 +442,26 @@ if __name__ == '__main__':
         else:
             print(f"Failure: {numInDecimal} != {numInDecimal}")
 
+
+    # Test code prototype
+    print("\nTest Prototype\n")
+
+    print("0P_123")
+    bP = BaseXNumber("0P_123")
+    print(bP)
+    print("0J_987")
+    bJ = BaseXNumber("0J_987")
+    print(bJ)
+    print("bPJ = bP + bJ")
+    bPJ = bP + bJ
+    print(bPJ)
+    #bPJ = BaseXNumber(bPJ)
+    #print(bPJ)
+    print("bP = bPJ - bJ")
+    bP = bPJ - bJ
+    print(bP)
+
+    print("Done\n")
 
     # Run the unit tests
     unittest.main()
