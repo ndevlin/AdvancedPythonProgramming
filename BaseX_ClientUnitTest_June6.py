@@ -59,7 +59,7 @@ class TestBaseXSystem(unittest.TestCase):
         self.assertEqual(bPInDecimal, result)
         print("Addition and Subtraction Test Passed")
         
-        self.client.sock.close()
+        self.client.exit()
 
 
 # Run the tests

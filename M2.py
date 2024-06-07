@@ -416,31 +416,32 @@ if __name__ == '__main__':
 
     converter = BaseConverter()
 
-    numbers = [36, 123, 456]
+    numbers = [BaseXNumber(36), BaseXNumber(123), BaseXNumber(456)]
 
     bases = [2, 8, 16]
 
     for number in numbers:
         print(f"\nTesting number {number}:")
 
-        currNumber = converter.represent(str(number), 10)
+        currNumber = number
 
         # Convert the number to each base
         for base in bases:
-            print(f"\nConverting {currNumber} to base {base}:")
-            numInBase = converter.convert(currNumber, base)
-            print(f"Number {currNumber} in base {base} is {numInBase}")
+            print(f"\nConverting {currNumber.getNumberInOriginalBase()} to base {base}:")
+            numInBase = BaseXNumber(converter.convert(currNumber.getNumberInOriginalBase(), base))
+            print(f"Number {currNumber.getNumberInOriginalBase()} in base {base} is {numInBase.getNumberInOriginalBase()}")
             currNumber = numInBase
 
-        print(f"\nConverting {currNumber} back to base 10:")
-        numInDecimal = converter.toDecimal(currNumber)
-        print(f"Number {currNumber} is {numInDecimal} in decimal")
+        print(f"\nConverting {currNumber.getNumberInOriginalBase()} back to base 10:")
+        numInDecimal = BaseXNumber(converter.toDecimal(currNumber.getNumberInOriginalBase()))
+        print(f"Number {currNumber.getNumberInOriginalBase()} is {numInDecimal.getNumberInOriginalBase()} in decimal")
 
         # Check if the number is the same after converting back to base 10
         if numInDecimal == number:
-            print(f"Success: {numInDecimal} == {numInDecimal}")
+            print(f"Success: {numInDecimal.getNumberInOriginalBase()} == {number.getNumberInOriginalBase()}")
         else:
-            print(f"Failure: {numInDecimal} != {numInDecimal}")
+            print(f"Failure: {numInDecimal.getNumberInOriginalBase()} != {number.getNumberInOriginalBase()}")
+
 
 
     # Test code prototype
