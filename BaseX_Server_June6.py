@@ -264,5 +264,38 @@ class Server:
 
 if __name__ == '__main__':
 
+    print("Run some tests to validate the BaseX System: ")
+    converter = BaseConverter()
+    numbers = [BaseXNumber(36), BaseXNumber(123), BaseXNumber(456)]
+    bases = [2, 8, 16]
+
+    for number in numbers:
+        print(f"\nTesting number {number}:")
+        currNumber = number
+
+        # Convert the number to each base
+        for base in bases:
+            print(f"\nConverting {currNumber.getNumberInOriginalBase()} to base {base}:")
+            numInBase = BaseXNumber(converter.convert(currNumber.getNumberInOriginalBase(), base))
+            print(f"Number {currNumber.getNumberInOriginalBase()} in base {base} is {numInBase.getNumberInOriginalBase()}")
+            currNumber = numInBase
+
+        print(f"\nConverting {currNumber.getNumberInOriginalBase()} back to base 10:")
+        numInDecimal = BaseXNumber(converter.toDecimal(currNumber.getNumberInOriginalBase()))
+        print(f"Number {currNumber.getNumberInOriginalBase()} is {numInDecimal.getNumberInOriginalBase()} in decimal")
+
+        # Check if the number is the same after converting back to base 10
+        if numInDecimal == number:
+            print(f"Success: {numInDecimal.getNumberInOriginalBase()} == {number.getNumberInOriginalBase()}")
+        else:
+            print(f"Failure: {numInDecimal.getNumberInOriginalBase()} != {number.getNumberInOriginalBase()}")
+
+    print("\n\n")
+
+    # Do the Server/Client based testing
+
+    print("Run the Server/Client based tests: ")
     server = Server()
     server.startProcessing()
+
+    print("Done")

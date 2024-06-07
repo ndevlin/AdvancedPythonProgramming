@@ -1,6 +1,5 @@
 
 import unittest
-import time
 import socket
 
 class Client:
@@ -40,7 +39,7 @@ class TestBaseXSystem(unittest.TestCase):
         bJ = "0J_987"
         bJInDecimal = 3408
         print("Add and Subtract Test")
-        print(f'Adding {bP} and {bJ}')
+        print(f'Adding bp, {bP} and bj, {bJ}')
         
         print("Add bP and bJ")
         toSend = bP + "," + bJ + ",add"
@@ -48,8 +47,8 @@ class TestBaseXSystem(unittest.TestCase):
         result = self.client.sendMessage(toSend)
         print("Result:", result)
         print("Subtract bJ from the result")
-        print("Send '", result, bJ, ",sub' to server")
         toSend = result + "," + bJ + ",sub"
+        print("Send '", toSend, "' to server")
         result = self.client.sendMessage(toSend)
         print("Result:", result)
         
@@ -65,4 +64,8 @@ class TestBaseXSystem(unittest.TestCase):
 # Run the tests
 if __name__ == '__main__':
 
+    print("Run the Server/Client based tests: ")
+
     unittest.main()
+
+    print("Done")
