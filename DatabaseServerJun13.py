@@ -116,18 +116,28 @@ class SqliteManager:
 # Scrape Co2.html to get the data to put in the database
 webScraper = WebScraper()
 
-webScraper.webPageFromFile("Co2.html")
+pageIn = 'https://gml.noaa.gov/aggi/aggi.html'
 
-tableData = webScraper.extractTags("td", 2)  # Skip the first 2 tags which are just a heading
+webScraper.requestWebPage(pageIn)
+
+tableData = webScraper.extractTags("td", 26)  # Skip the first 26 tags which are from the previous table
 webScraper.cleanTags(tableData)
 
+originalColLength = 11
 numCols = 7
-headers = []
-i = 0
-headers = webScraper.memberDict["td"][0:numCols]
-webScraper.memberDict["td"] = webScraper.memberDict["td"][numCols:]
+numRows = 44
+newTableData = []
 
-headerTypes = ["INTEGER", "INTEGER", "FLOAT", "FLOAT", "FLOAT", "FLOAT", "INTEGER"]
+# Take only first 7 columns
+for i in range(0, originalColLength * numRows, originalColLength):
+    newTableData.extend(tableData[1][i:i+numCols])
+
+webScraper.memberDict["td"] = tuple(newTableData)
+
+headers = ["Year", "C02", "CH4", "N2O", "CFCs", "HCFCs", "HFCs"]
+i = 0
+
+headerTypes = ["INTEGER", "FLOAT", "FLOAT", "FLOAT", "FLOAT", "FLOAT", "FLOAT"]
 tableTupleData = "("
 for header, headerType in zip(headers, headerTypes):
     tableTupleData += header + " " + headerType + ", "
