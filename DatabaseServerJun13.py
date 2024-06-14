@@ -14,7 +14,9 @@ import socket
 import json
 from ByteStreams_May15_NDevlin import ByteStream
 
+import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 class WebScraper():
 
@@ -64,7 +66,7 @@ class WebScraper():
     def getData(self):
         return self.memberDict.items()
     
-    def convertToPandasDataFrame(self):
+    def convertToPandasDataFrame(self, headers):
         if self.memberDict == defaultdict(list):
             print("Must Clean Tags before converting to Pandas DataFrame")
             return
@@ -78,7 +80,10 @@ class WebScraper():
             row = []
             for j in range(numCols):
                 currVal = i * numCols + j
-                row.append(self.memberDict["td"][currVal])
+                value = self.memberDict["td"][currVal]
+                if type(value) == str:
+                    value = float(value)
+                row.append(value)
             pandaReadyList.append(row)
         self.dataFrame = pd.DataFrame(pandaReadyList, columns = headers)
         
@@ -210,8 +215,6 @@ class Server:
 Will later go on Client side
 """
 
-import matplotlib.pyplot as plt
-
 class PlotManager:
     def __init__(self, df):
         self.df = df
@@ -220,7 +223,7 @@ class PlotManager:
         return f'PlotManager for DataFrame with {self.df.shape[0]} rows and {self.df.shape[1]} columns'
 
     def linePlot(self, title=None):
-        x, y = self.df.columns[:2]
+        x, y = self.df.columns[:7]
         if not title:
             title = f'{y} by {x}'
         plt.figure()
@@ -231,7 +234,7 @@ class PlotManager:
         plt.show()
 
     def barPlot(self, title=None):
-        x, y = self.df.columns[:2]
+        x, y = self.df.columns[:7]
         if not title:
             title = f'{y} by {x}'
         plt.figure()
@@ -242,7 +245,7 @@ class PlotManager:
         plt.show()
 
     def scatterPlot(self, title=None):
-        x, y = self.df.columns[:2]
+        x, y = self.df.columns[:7]
         if not title:
             title = f'{y} by {x}'
         plt.figure()
@@ -253,6 +256,29 @@ class PlotManager:
         plt.show()
 
 
+    def linearRegressionPlot(self, title=None):
+        x = self.df.columns[0]  # Year column
+        data_columns = self.df.columns[1:7]  # The next 6 columns with data
+
+        plt.figure(figsize=(10, 6))  # Set figure size for better readability
+
+        for y in data_columns:
+            if not title:
+                title = f'Linear Regression of {y} by {x}'
+            # Calculate the linear regression (slope and intercept)
+            slope, intercept = np.polyfit(self.df[x], self.df[y], 1)
+            # Calculate the y-values based on the slope and intercept
+            yVals = slope * self.df[x] + intercept
+            # Plot the original data as a scatter plot
+            plt.scatter(self.df[x], self.df[y], label=f'Data {y}')
+            # Plot the regression line
+            plt.plot(self.df[x], yVals, label=f'Linear Regression {y}')
+
+        plt.title('Linear Regression by Year')
+        plt.xlabel(x)
+        plt.ylabel('Data Values')
+        plt.legend()
+        plt.show()
 
 
 
@@ -292,13 +318,17 @@ databaseName = "GlobalRadiativeForcing.db"
 tableName = databaseName.split(".")[0]
 
 with SqliteManager(databaseName) as db:
-    # Test CREATE TABLE
+    # Create Table
     create_table_query = db.queryBuilder('CREATE TABLE', tableName, tableTupleData)
     db.executeQuery(create_table_query)
 
+    # Add data to the table
     listOfRows = []
     for i in range(0, len(webScraper.memberDict["td"]), numCols):
         listOfRows.append(webScraper.memberDict["td"][i:i+numCols])
+
+
+
     # INSERT
     for row in listOfRows:
         insert_query = db.queryBuilder('INSERT', tableName, row)
@@ -313,28 +343,18 @@ with SqliteManager(databaseName) as db:
     db.executeQuery(where_query)
 
 
-originalDataFrame = webScraper.convertToPandasDataFrame()
-print(originalDataFrame)
 
 
-'''
-# Convert the data  from string to numeric
-originalDataFrame = pd.to_numeric(originalDataFrame['Greenhouse gas emissions from agriculture'], errors='coerce')
-# Group each country with the agriculture emissions
-countryData = originalDataFrame.groupby('Entity')['Greenhouse gas emissions from agriculture']
-# Take the average
-averageEmissions = countryData.mean()
-# Create a new dataframe with that data
-averageEmissionsDataFrame = averageEmissions.reset_index()
-# Rename the columns
-averageEmissionsDataFrame.columns = ['Country', 'Average Agriculture Emissions']
-#display_dataframe(averageEmissionsDataFrame, title="Average Agricultural Emissions By Country")
-'''
 
 
-plotManager = PlotManager(originalDataFrame)
+dataFrame = webScraper.convertToPandasDataFrame(headers)
+print(dataFrame)
+
+
+
+plotManager = PlotManager(dataFrame)
 print(plotManager)
-plotManager.barPlot()
+plotManager.linearRegressionPlot()
 
 print("Done")
 
