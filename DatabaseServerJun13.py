@@ -316,9 +316,10 @@ with SqliteManager(databaseName) as db:
 originalDataFrame = webScraper.convertToPandasDataFrame()
 print(originalDataFrame)
 
+
 '''
-# Convert the 'Greenhouse gas emissions from agriculture' column from string to numeric
-originalDataFrame['Greenhouse gas emissions from agriculture'] = pd.to_numeric(originalDataFrame['Greenhouse gas emissions from agriculture'], errors='coerce')
+# Convert the data  from string to numeric
+originalDataFrame = pd.to_numeric(originalDataFrame['Greenhouse gas emissions from agriculture'], errors='coerce')
 # Group each country with the agriculture emissions
 countryData = originalDataFrame.groupby('Entity')['Greenhouse gas emissions from agriculture']
 # Take the average
@@ -329,6 +330,13 @@ averageEmissionsDataFrame = averageEmissions.reset_index()
 averageEmissionsDataFrame.columns = ['Country', 'Average Agriculture Emissions']
 #display_dataframe(averageEmissionsDataFrame, title="Average Agricultural Emissions By Country")
 '''
+
+
+plotManager = PlotManager(originalDataFrame)
+print(plotManager)
+plotManager.barPlot()
+
+print("Done")
 
 
 
