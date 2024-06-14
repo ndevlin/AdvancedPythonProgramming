@@ -14,11 +14,14 @@ import socket
 import json
 from ByteStreams_May15_NDevlin import ByteStream
 
+import pandas as pd
+
 class WebScraper():
 
     def __init__(self):
         self.soup = None
         self.memberDict = defaultdict(list)
+        self.dataFrame = None
 
     def requestWebPage(self, pageIn):
         try:
@@ -60,6 +63,29 @@ class WebScraper():
 
     def getData(self):
         return self.memberDict.items()
+    
+    def convertToPandasDataFrame(self):
+        if self.memberDict == defaultdict(list):
+            print("Must Clean Tags before converting to Pandas DataFrame")
+            return
+
+        numRows = 44
+
+        numCols = 7
+
+        pandaReadyList = []
+        for i in range(numRows):
+            row = []
+            for j in range(numCols):
+                currVal = i * numCols + j
+                row.append(self.memberDict["td"][currVal])
+            pandaReadyList.append(row)
+        self.dataFrame = pd.DataFrame(pandaReadyList, columns = headers)
+        
+        return self.dataFrame
+    
+    def printDataFrame(self):
+        print(self.dataFrame)
     
 
 class SqliteManager:
@@ -171,36 +197,60 @@ class Server:
             self.conn.close()
     
 
-    def startReceiveTextFile(self):
-        print("Attempting to Receive Text File")
-        receivedData = ""
-        with open("receivedTextFile.txt", 'w') as file:
-            while receivedData.lower() != 'exit':
-                data = self.conn.recv(1024)
-                if data:
-                    receivedData = data.decode('utf-8')
-                    print(receivedData)
-                    if receivedData.lower() == 'exit':
-                        print("Client exited")
-                        break
-                    file.write(receivedData)
-
-
-    def startReceiveBinaryFile(self, filename="receivedBinaryFile.bin"):
-        print("Attempting to Receive Binary File to ", filename)
-        receivedData = ""
-        data = self.conn.recv(131072)
-        if data:
-            receivedData = data.decode('utf-8')
-            with open(filename, "w") as file:
-                file.write(receivedData)
-            print("Wrote received data to file: ", filename)
-        else:
-            print("No data received")
-
     def close(self):
         print("Closing Connection")
         self.conn.close()
+
+
+
+
+
+
+"""
+Will later go on Client side
+"""
+
+import matplotlib.pyplot as plt
+
+class PlotManager:
+    def __init__(self, df):
+        self.df = df
+
+    def __str__(self):
+        return f'PlotManager for DataFrame with {self.df.shape[0]} rows and {self.df.shape[1]} columns'
+
+    def linePlot(self, title=None):
+        x, y = self.df.columns[:2]
+        if not title:
+            title = f'{y} by {x}'
+        plt.figure()
+        plt.plot(self.df[x], self.df[y])
+        plt.title(title)
+        plt.xlabel(x)
+        plt.ylabel(y)
+        plt.show()
+
+    def barPlot(self, title=None):
+        x, y = self.df.columns[:2]
+        if not title:
+            title = f'{y} by {x}'
+        plt.figure()
+        plt.bar(self.df[x], self.df[y])
+        plt.title(title)
+        plt.xlabel(x)
+        plt.ylabel(y)
+        plt.show()
+
+    def scatterPlot(self, title=None):
+        x, y = self.df.columns[:2]
+        if not title:
+            title = f'{y} by {x}'
+        plt.figure()
+        plt.scatter(self.df[x], self.df[y])
+        plt.title(title)
+        plt.xlabel(x)
+        plt.ylabel(y)
+        plt.show()
 
 
 
@@ -263,8 +313,28 @@ with SqliteManager(databaseName) as db:
     db.executeQuery(where_query)
 
 
-    # Server Code
-    server = Server(databaseName)
-    server.startSqlQueries()
-    server.close()
+originalDataFrame = webScraper.convertToPandasDataFrame()
+print(originalDataFrame)
+
+'''
+# Convert the 'Greenhouse gas emissions from agriculture' column from string to numeric
+originalDataFrame['Greenhouse gas emissions from agriculture'] = pd.to_numeric(originalDataFrame['Greenhouse gas emissions from agriculture'], errors='coerce')
+# Group each country with the agriculture emissions
+countryData = originalDataFrame.groupby('Entity')['Greenhouse gas emissions from agriculture']
+# Take the average
+averageEmissions = countryData.mean()
+# Create a new dataframe with that data
+averageEmissionsDataFrame = averageEmissions.reset_index()
+# Rename the columns
+averageEmissionsDataFrame.columns = ['Country', 'Average Agriculture Emissions']
+#display_dataframe(averageEmissionsDataFrame, title="Average Agricultural Emissions By Country")
+'''
+
+
+
+
+# Server Code
+server = Server(databaseName)
+server.startSqlQueries()
+server.close()
 
