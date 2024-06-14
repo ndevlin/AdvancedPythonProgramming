@@ -120,7 +120,8 @@ pageIn = 'https://gml.noaa.gov/aggi/aggi.html'
 
 webScraper.requestWebPage(pageIn)
 
-tableData = webScraper.extractTags("td", 26)  # Skip the first 26 tags which are from the previous table
+tagsToSkip = 26     # Skip the first 26 tags which are from the previous table
+tableData = webScraper.extractTags("td", tagsToSkip)
 webScraper.cleanTags(tableData)
 
 originalColLength = 11
@@ -144,10 +145,11 @@ for header, headerType in zip(headers, headerTypes):
 tableTupleData = tableTupleData[:-2] + ")"
 
 databaseName = "GlobalRadiativeForcing.db"
+tableName = databaseName.split(".")[0]
 
 with SqliteManager(databaseName) as db:
     # Test CREATE TABLE
-    create_table_query = db.queryBuilder('CREATE TABLE', 'TotalCarbonEmissions', tableTupleData)
+    create_table_query = db.queryBuilder('CREATE TABLE', tableName, tableTupleData)
     db.executeQuery(create_table_query)
 
     listOfRows = []
@@ -155,23 +157,15 @@ with SqliteManager(databaseName) as db:
         listOfRows.append(webScraper.memberDict["td"][i:i+numCols])
     # INSERT
     for row in listOfRows:
-        insert_query = db.queryBuilder('INSERT', 'TotalCarbonEmissions', row)
+        insert_query = db.queryBuilder('INSERT', tableName, row)
         db.executeQuery(insert_query)
 
     # Test SELECT
-    select_query = db.queryBuilder('SELECT', 'TotalCarbonEmissions')
+    select_query = db.queryBuilder('SELECT', tableName)
     db.executeQuery(select_query)
 
     # Test WHERE
-    where_query = db.queryBuilder('WHERE', 'TotalCarbonEmissions', "year='1959'")
+    where_query = db.queryBuilder('WHERE', tableName, "year='1979'")
     db.executeQuery(where_query)
-
-    # Test UPDATE
-    update_query = db.queryBuilder('UPDATE', 'TotalCarbonEmissions', "year='1958' WHERE year='1959'")
-    db.executeQuery(update_query)
-
-    # Test DELETE
-    delete_query = db.queryBuilder('DELETE', 'TotalCarbonEmissions', "year='1960'")
-    db.executeQuery(delete_query)
 
 
