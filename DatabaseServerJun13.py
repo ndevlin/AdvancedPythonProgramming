@@ -112,19 +112,19 @@ class SqliteManager:
             self.connection.close()
             print(f"Disconnected from database: {self.db_name}")
 
-    def queryBuilder(self, query_type, table_name, query_tuple=None):
+    def queryBuilder(self, query_type, table_name, queryVal1=None, queryVal2=None):
         if query_type.upper() == "CREATE TABLE":
-            query_string = f"CREATE TABLE IF NOT EXISTS {table_name} {query_tuple}"
+            query_string = f"CREATE TABLE IF NOT EXISTS {table_name} {queryVal1}"
         elif query_type.upper() == "INSERT":
-            query_string = f"INSERT INTO {table_name} VALUES {query_tuple}"
+            query_string = f"INSERT INTO {table_name} VALUES {queryVal1}"
         elif query_type.upper() == "SELECT":
             query_string = f"SELECT * FROM {table_name}"
         elif query_type.upper() == "WHERE":
-            query_string = f"SELECT * FROM {table_name} WHERE {query_tuple}"
+            query_string = f"SELECT {queryVal1} FROM {table_name} WHERE {queryVal2}"
         elif query_type.upper() == "UPDATE":
-            query_string = f"UPDATE {table_name} SET {query_tuple}"
+            query_string = f"UPDATE {table_name} SET {queryVal1}"
         elif query_type.upper() == "DELETE":
-            query_string = f"DELETE FROM {table_name} WHERE {query_tuple}"
+            query_string = f"DELETE FROM {table_name} WHERE {queryVal1}"
         else:
             raise ValueError(f"Unsupported query type: {query_type}")
         return query_string
@@ -317,23 +317,42 @@ tableTupleData = tableTupleData[:-2] + ")"
 databaseName = "GlobalRadiativeForcing.db"
 tableName = databaseName.split(".")[0]
 
+
+
+
+
+
+# Convert to Pandas DataFrame and print it - not to be used in final version
+dataFrame = webScraper.convertToPandasDataFrame(headers)
+print(dataFrame)
+
+
+
+
+
 with SqliteManager(databaseName) as db:
+
+    # Check if the table exists and delete it if it does
+    db.executeQuery(f"DROP TABLE IF EXISTS {tableName}")
+
     # Create Table
-    create_table_query = db.queryBuilder('CREATE TABLE', tableName, tableTupleData)
-    db.executeQuery(create_table_query)
+    createTableQuery = db.queryBuilder('CREATE TABLE', tableName, tableTupleData)
+    db.executeQuery(createTableQuery)
 
     # Add data to the table
     listOfRows = []
     for i in range(0, len(webScraper.memberDict["td"]), numCols):
         listOfRows.append(webScraper.memberDict["td"][i:i+numCols])
 
-
+    years = [row[0] for row in listOfRows]
 
     # INSERT
     for row in listOfRows:
         insert_query = db.queryBuilder('INSERT', tableName, row)
         db.executeQuery(insert_query)
 
+
+    '''
     # Test SELECT
     select_query = db.queryBuilder('SELECT', tableName)
     db.executeQuery(select_query)
@@ -341,14 +360,24 @@ with SqliteManager(databaseName) as db:
     # Test WHERE
     where_query = db.queryBuilder('WHERE', tableName, "year='1979'")
     db.executeQuery(where_query)
+    '''
+
+    nextData = None
+    # Queue next query
+    for year in years:
+        for header in headers:
+            if header == "Year":
+                nextData = year
+                print(nextData)
+                continue
+            query = db.queryBuilder('WHERE', tableName, header, f"Year='{year}'")
+            nextData = db.executeQuery(query)
+            nextData = nextData[0][0]   # Extract the string value
+            print(nextData)
+            
 
 
 
-
-
-
-dataFrame = webScraper.convertToPandasDataFrame(headers)
-print(dataFrame)
 
 
 
