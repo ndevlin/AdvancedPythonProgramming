@@ -14,9 +14,6 @@ import socket
 import json
 from ByteStreams_May15_NDevlin import ByteStream
 
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
 
 class WebScraper():
 
@@ -148,12 +145,10 @@ class SqliteManager:
 
 
 class Server:
-    def __init__(self, db_name="Database.db"):
+    def __init__(self, db):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.bind(('localhost', 12346))
-        self.db = SqliteManager(db_name)
-        self.db.executeQuery('CREATE TABLE IF NOT EXISTS Database (id INTEGER PRIMARY KEY, name TEXT)')
-        self.db.executeQuery("INSERT INTO Database (name) VALUES ('Jack'), ('Jill')")
+        self.db = db
 
         self.sock.listen(1)
         print("Starting server...")
@@ -162,18 +157,16 @@ class Server:
         print("Connected...")
 
     def startSqlQueries(self):
-        data = self.conn.recv(1024)
-        print("Received data:", data)
-        if data:
-            response = self.processQuery(data.decode('utf-8'))
-            print(f"Response:", response)
-            # Convert the result to a list of dictionaries
-            result = [{'id': row[0], 'name': row[1]} for row in response]
-            # Convert the result to JSON
-            jsonResult = json.dumps(result)
-            print("Sending response:", jsonResult)
-            bytestream = ByteStream(data=jsonResult, isBinary=False)
-            self.conn.sendall(bytestream.get_bytes())
+        while True:
+            data = self.conn.recv(1024)
+            print("Received data:", data)
+            if data:
+                response = self.processQuery(data.decode('utf-8'))
+                print(f"Response:", response)
+                response = str(response[0][0])
+                print("Sending response:", response)
+                bytestream = ByteStream(data=response, isBinary=False)
+                self.conn.sendall(bytestream.get_bytes())
     
     def processQuery(self, query):
         result = self.db.executeQuery(query)
@@ -205,80 +198,6 @@ class Server:
     def close(self):
         print("Closing Connection")
         self.conn.close()
-
-
-
-
-
-
-"""
-Will later go on Client side
-"""
-
-class PlotManager:
-    def __init__(self, df):
-        self.df = df
-
-    def __str__(self):
-        return f'PlotManager for DataFrame with {self.df.shape[0]} rows and {self.df.shape[1]} columns'
-
-    def linePlot(self, title=None):
-        x, y = self.df.columns[:7]
-        if not title:
-            title = f'{y} by {x}'
-        plt.figure()
-        plt.plot(self.df[x], self.df[y])
-        plt.title(title)
-        plt.xlabel(x)
-        plt.ylabel(y)
-        plt.show()
-
-    def barPlot(self, title=None):
-        x, y = self.df.columns[:7]
-        if not title:
-            title = f'{y} by {x}'
-        plt.figure()
-        plt.bar(self.df[x], self.df[y])
-        plt.title(title)
-        plt.xlabel(x)
-        plt.ylabel(y)
-        plt.show()
-
-    def scatterPlot(self, title=None):
-        x, y = self.df.columns[:7]
-        if not title:
-            title = f'{y} by {x}'
-        plt.figure()
-        plt.scatter(self.df[x], self.df[y])
-        plt.title(title)
-        plt.xlabel(x)
-        plt.ylabel(y)
-        plt.show()
-
-
-    def linearRegressionPlot(self, title=None):
-        x = self.df.columns[0]  # Year column
-        data_columns = self.df.columns[1:7]  # The next 6 columns with data
-
-        plt.figure(figsize=(10, 6))  # Set figure size for better readability
-
-        for y in data_columns:
-            if not title:
-                title = f'Linear Regression of {y} by {x}'
-            # Calculate the linear regression (slope and intercept)
-            slope, intercept = np.polyfit(self.df[x], self.df[y], 1)
-            # Calculate the y-values based on the slope and intercept
-            yVals = slope * self.df[x] + intercept
-            # Plot the original data as a scatter plot
-            plt.scatter(self.df[x], self.df[y], label=f'Data {y}')
-            # Plot the regression line
-            plt.plot(self.df[x], yVals, label=f'Linear Regression {y}')
-
-        plt.title('Linear Regression by Year')
-        plt.xlabel(x)
-        plt.ylabel('Data Values')
-        plt.legend()
-        plt.show()
 
 
 
@@ -341,42 +260,9 @@ with SqliteManager(databaseName) as db:
         db.executeQuery(insert_query)
 
 
-    dataInListForm = []
-    nextData = None
-    # Queue next query
-    for year in years:
-        for header in headers:
-            if header == "Year":
-                nextData = int(year)
-                dataInListForm.append(nextData)
-                continue
-            query = db.queryBuilder('WHERE', tableName, header, f"Year='{year}'")
-            nextData = db.executeQuery(query)
-            nextData = float(nextData[0][0])   # Extract the string value and convert to float
-            dataInListForm.append(nextData)
-        
-    print(dataInListForm)
-            
+    # Server Code
+    server = Server(db)
+    server.startSqlQueries()
+    server.close()
 
-# Reshape the list into a 2D array with 44 rows and 7 columns
-reshapedData = np.reshape(dataInListForm, (numRows, numCols))
-
-# Create the DataFrame
-df = pd.DataFrame(reshapedData, columns=headers)
-print(df)
-
-
-plotManager = PlotManager(df)
-print(plotManager)
-plotManager.linearRegressionPlot()
-
-print("Done")
-
-
-
-
-# Server Code
-server = Server(databaseName)
-server.startSqlQueries()
-server.close()
 

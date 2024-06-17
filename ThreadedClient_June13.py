@@ -11,6 +11,9 @@ import time
 from ByteStreams_May15_NDevlin import ByteStream
 from Databases_Refactor_May17 import SqliteManager
 
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 
 class Client:
     def __init__(self):
@@ -86,53 +89,149 @@ class Client:
         self.sock.close()
 
 
+class PlotManager:
+    def __init__(self, df):
+        self.df = df
 
-class TestServerClient(unittest.TestCase):
-    def testQuery(self):
-        client = Client()
-        print("Creating client...")
-        client.connect()
-        try:
-            print("Sending query: 'SELECT * FROM Database'")
-            result = client.sendMessage('SELECT * FROM Database')
-            print("Received result:", result)
-            # Test that the returned entry starts with the expected first two entries
-            self.assertEqual(json.loads(result)[:2], [{'id': 1, 'name': 'Jack'}, {'id': 2, 'name': 'Jill'}])
-            print("Test passed")
-            
-        except Exception as e:
-            print(f"Error sending query: {e}")
-        finally:
-            print("Closing client socket...")
-            client.sock.close()
+    def __str__(self):
+        return f'PlotManager for DataFrame with {self.df.shape[0]} rows and {self.df.shape[1]} columns'
+
+    def linePlot(self, title=None):
+        x, y = self.df.columns[:7]
+        if not title:
+            title = f'{y} by {x}'
+        plt.figure()
+        plt.plot(self.df[x], self.df[y])
+        plt.title(title)
+        plt.xlabel(x)
+        plt.ylabel(y)
+        plt.show()
+
+    def barPlot(self, title=None):
+        x, y = self.df.columns[:7]
+        if not title:
+            title = f'{y} by {x}'
+        plt.figure()
+        plt.bar(self.df[x], self.df[y])
+        plt.title(title)
+        plt.xlabel(x)
+        plt.ylabel(y)
+        plt.show()
+
+    def scatterPlot(self, title=None):
+        x, y = self.df.columns[:7]
+        if not title:
+            title = f'{y} by {x}'
+        plt.figure()
+        plt.scatter(self.df[x], self.df[y])
+        plt.title(title)
+        plt.xlabel(x)
+        plt.ylabel(y)
+        plt.show()
 
 
-if __name__ == '__main__':
+    def linearRegressionPlot(self, title=None):
+        x = self.df.columns[0]  # Year column
+        data_columns = self.df.columns[1:7]  # The next 6 columns with data
 
-    # Mode should equal "interactive", "testSqlQueries", "sendTextFile"
-    mode = "testSqlQueries"
+        plt.figure(figsize=(10, 6))  # Set figure size for better readability
 
-    if mode == "testSqlQueries":
-        unittest.main()
+        for y in data_columns:
+            if not title:
+                title = f'Linear Regression of {y} by {x}'
+            # Calculate the linear regression (slope and intercept)
+            slope, intercept = np.polyfit(self.df[x], self.df[y], 1)
+            # Calculate the y-values based on the slope and intercept
+            yVals = slope * self.df[x] + intercept
+            # Plot the original data as a scatter plot
+            plt.scatter(self.df[x], self.df[y], label=f'Data {y}')
+            # Plot the regression line
+            plt.plot(self.df[x], yVals, label=f'Linear Regression {y}')
 
-    if mode == "interactive":
-        client = Client()
-        client.interactiveModeStart()
-    
-    if mode == "sendTextFile":
-        filename = "Sockets_TestText_May21.txt"
-        client = Client()
-        client.sendTextFile(filename)
+        plt.title('Linear Regression by Year')
+        plt.xlabel(x)
+        plt.ylabel('Data Values')
+        plt.legend()
+        plt.show()
 
-    if mode == "sendBinaryFile":
-        with open("testBinaryFile.bin", 'wb') as file:
-            textString = "This is a test binary string"
-            binaryData = textString.encode('utf-8') 
-            file.write(binaryData)
+
+
+class SqliteManagerLite:
+    def queryBuilder(self, query_type, table_name, queryVal1=None, queryVal2=None):
+        if query_type.upper() == "CREATE TABLE":
+            query_string = f"CREATE TABLE IF NOT EXISTS {table_name} {queryVal1}"
+        elif query_type.upper() == "INSERT":
+            query_string = f"INSERT INTO {table_name} VALUES {queryVal1}"
+        elif query_type.upper() == "SELECT":
+            query_string = f"SELECT * FROM {table_name}"
+        elif query_type.upper() == "WHERE":
+            query_string = f"SELECT {queryVal1} FROM {table_name} WHERE {queryVal2}"
+        elif query_type.upper() == "UPDATE":
+            query_string = f"UPDATE {table_name} SET {queryVal1}"
+        elif query_type.upper() == "DELETE":
+            query_string = f"DELETE FROM {table_name} WHERE {queryVal1}"
+        else:
+            raise ValueError(f"Unsupported query type: {query_type}")
+        return query_string
+
+
+# Main
+
+numCols = 7
+startYear = 1979
+endYear = 2022
+numRows = endYear - startYear + 1
+years = [str(year) for year in range(startYear, endYear + 1)]
+tableName = "GlobalRadiativeForcing"
+
+totalCells = numCols * numRows
+headers = ["Year", "C02", "CH4", "N2O", "CFCs", "HCFCs", "HFCs"]
+
+sqliteManagerLite = SqliteManagerLite()
+
+client = Client()
+print("Creating client...")
+client.connect()
+
+dataInListForm = []
+
+nextData = None
+# Queue next query
+for year in years:
+    for header in headers:
+        if header == "Year":
+            nextData = int(year)
+            dataInListForm.append(nextData)
+            continue
+        query = sqliteManagerLite.queryBuilder('WHERE', tableName, header, f"Year='{year}'")
+        print("Sending query: " + query)
+        result = client.sendMessage(query)
+        print("Received result:", result)
+        nextData = float(result)
+        dataInListForm.append(nextData)
+
+
+print(dataInListForm)
         
-        filename = "testBinaryFile.bin"
-
-        client = Client()
-        client.sendBinaryFile(filename)
 
 
+# Reshape the list into a 2D array with 44 rows and 7 columns
+reshapedData = np.reshape(dataInListForm, (numRows, numCols))
+
+# Create the DataFrame
+df = pd.DataFrame(reshapedData, columns=headers)
+print(df)
+
+
+plotManager = PlotManager(df)
+print(plotManager)
+plotManager.linearRegressionPlot()
+
+print("Done")
+
+
+
+
+
+print("Closing client socket...")
+client.sock.close()
