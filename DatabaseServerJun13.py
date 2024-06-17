@@ -319,17 +319,6 @@ tableName = databaseName.split(".")[0]
 
 
 
-
-
-
-# Convert to Pandas DataFrame and print it - not to be used in final version
-dataFrame = webScraper.convertToPandasDataFrame(headers)
-print(dataFrame)
-
-
-
-
-
 with SqliteManager(databaseName) as db:
 
     # Check if the table exists and delete it if it does
@@ -352,36 +341,32 @@ with SqliteManager(databaseName) as db:
         db.executeQuery(insert_query)
 
 
-    '''
-    # Test SELECT
-    select_query = db.queryBuilder('SELECT', tableName)
-    db.executeQuery(select_query)
-
-    # Test WHERE
-    where_query = db.queryBuilder('WHERE', tableName, "year='1979'")
-    db.executeQuery(where_query)
-    '''
-
+    dataInListForm = []
     nextData = None
     # Queue next query
     for year in years:
         for header in headers:
             if header == "Year":
-                nextData = year
-                print(nextData)
+                nextData = int(year)
+                dataInListForm.append(nextData)
                 continue
             query = db.queryBuilder('WHERE', tableName, header, f"Year='{year}'")
             nextData = db.executeQuery(query)
-            nextData = nextData[0][0]   # Extract the string value
-            print(nextData)
+            nextData = float(nextData[0][0])   # Extract the string value and convert to float
+            dataInListForm.append(nextData)
+        
+    print(dataInListForm)
             
 
+# Reshape the list into a 2D array with 44 rows and 7 columns
+reshapedData = np.reshape(dataInListForm, (numRows, numCols))
+
+# Create the DataFrame
+df = pd.DataFrame(reshapedData, columns=headers)
+print(df)
 
 
-
-
-
-plotManager = PlotManager(dataFrame)
+plotManager = PlotManager(df)
 print(plotManager)
 plotManager.linearRegressionPlot()
 
