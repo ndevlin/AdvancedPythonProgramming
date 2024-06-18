@@ -157,7 +157,8 @@ class Server:
         print("Connected...")
 
     def startSqlQueries(self):
-        while True:
+        data = "placeholder"
+        while data:
             data = self.conn.recv(1024)
             print("Received data:", data)
             if data:
