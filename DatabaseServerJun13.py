@@ -22,12 +22,8 @@ class WebScraper():
         self.dataFrame = None
 
     def requestWebPage(self, pageIn):
-        try:
-            html = urlopen(pageIn)
-            self.soup =  BeautifulSoup(html, "html.parser")
-        except:
-            print("Issue retrieving Web Page")
-            self.soup = None
+        html = urlopen(pageIn)
+        self.soup =  BeautifulSoup(html, "html.parser")
 
     def webPageFromFile(self, fileName):
         try:

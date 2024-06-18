@@ -191,30 +191,47 @@ client = Client()
 print("Creating client...")
 client.connect()
 
-dataInListForm = []
+# Initialize an empty 2D array with dimensions numRows x numCols
+dataIn2DForm = np.empty((numRows, numCols))
 
-nextData = None
-# Queue next query
-for year in years:
-    for header in headers:
+'''
+# Create dictionaries for row and column indices
+yearToRowIndex = {year: index for index, year in enumerate(years)}
+headerToColIndex = {header: index for index, header in enumerate(headers)}
+
+# Create reverse dictionaries
+rowIndexToYear = {index: year for year, index in yearToRowIndex.items()}
+colIndexToHeader = {index: header for header, index in headerToColIndex.items()}
+
+print("Year to Row Index:", yearToRowIndex)
+print("Header to Column Index:", headerToColIndex)
+print("Row Index to Year:", rowIndexToYear)
+print("Column Index to Header:", colIndexToHeader)
+'''
+
+dataQueryQueue = []
+
+# Create queue
+for rowIndex, year in enumerate(years):
+    for colIndex, header in enumerate(headers):
         if header == "Year":
-            nextData = int(year)
-            dataInListForm.append(nextData)
-            continue
-        query = sqliteManagerLite.queryBuilder('WHERE', tableName, header, f"Year='{year}'")
-        print("Sending query: " + query)
-        result = client.sendMessage(query)
-        print("Received result:", result)
-        nextData = float(result)
-        dataInListForm.append(nextData)
+            dataIn2DForm[rowIndex, colIndex] = int(year)
+        else:
+            dataQueryQueue.append((rowIndex, colIndex, year, header))
 
-print(dataInListForm)
+print(dataQueryQueue)
 
-# Reshape the list into a 2D array
-reshapedData = np.reshape(dataInListForm, (numRows, numCols))
+for rowIndex, colIndex, year, header in dataQueryQueue:
+    query = sqliteManagerLite.queryBuilder('WHERE', tableName, header, f"Year='{year}'")
+    print("Sending query: " + query)
+    result = client.sendMessage(query)
+    print("Received result:", result)
+    dataIn2DForm[rowIndex, colIndex] = float(result)
+
+print(dataIn2DForm)
 
 # Create the DataFrame
-df = pd.DataFrame(reshapedData, columns=headers)
+df = pd.DataFrame(dataIn2DForm, columns=headers)
 print(df)
 
 
