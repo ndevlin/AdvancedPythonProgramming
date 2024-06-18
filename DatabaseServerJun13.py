@@ -16,7 +16,6 @@ from ByteStreams_May15_NDevlin import ByteStream
 
 
 class WebScraper():
-
     def __init__(self):
         self.soup = None
         self.memberDict = defaultdict(list)
@@ -62,29 +61,6 @@ class WebScraper():
 
     def getData(self):
         return self.memberDict.items()
-    
-    def convertToPandasDataFrame(self, headers):
-        if self.memberDict == defaultdict(list):
-            print("Must Clean Tags before converting to Pandas DataFrame")
-            return
-
-        numRows = 44
-
-        numCols = 7
-
-        pandaReadyList = []
-        for i in range(numRows):
-            row = []
-            for j in range(numCols):
-                currVal = i * numCols + j
-                value = self.memberDict["td"][currVal]
-                if type(value) == str:
-                    value = float(value)
-                row.append(value)
-            pandaReadyList.append(row)
-        self.dataFrame = pd.DataFrame(pandaReadyList, columns = headers)
-        
-        return self.dataFrame
     
     def printDataFrame(self):
         print(self.dataFrame)
@@ -194,16 +170,13 @@ class Server:
         except:
             print("Closing Connection")
             self.conn.close()
-    
 
     def close(self):
         print("Closing Connection")
         self.conn.close()
 
 
-
 # Main
-# Scrape Co2.html to get the data to put in the database
 webScraper = WebScraper()
 
 pageIn = 'https://gml.noaa.gov/aggi/aggi.html'
@@ -226,7 +199,6 @@ for i in range(0, originalColLength * numRows, originalColLength):
 webScraper.memberDict["td"] = tuple(newTableData)
 
 headers = ["Year", "C02", "CH4", "N2O", "CFCs", "HCFCs", "HFCs"]
-i = 0
 
 headerTypes = ["INTEGER", "FLOAT", "FLOAT", "FLOAT", "FLOAT", "FLOAT", "FLOAT"]
 tableTupleData = "("
@@ -236,7 +208,6 @@ tableTupleData = tableTupleData[:-2] + ")"
 
 databaseName = "GlobalRadiativeForcing.db"
 tableName = databaseName.split(".")[0]
-
 
 
 with SqliteManager(databaseName) as db:
@@ -255,15 +226,17 @@ with SqliteManager(databaseName) as db:
 
     years = [row[0] for row in listOfRows]
 
-    # INSERT
+    # Insert data into database
     for row in listOfRows:
         insert_query = db.queryBuilder('INSERT', tableName, row)
         db.executeQuery(insert_query)
 
 
-    # Server Code
+    # Start Server to send data to client
     server = Server(db)
     server.startSqlQueries()
     server.close()
 
+
+print("Done")
 

@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+
 class Client:
     def __init__(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -129,7 +130,6 @@ class PlotManager:
         plt.ylabel(y)
         plt.show()
 
-
     def linearRegressionPlot(self, title=None):
         x = self.df.columns[0]  # Year column
         data_columns = self.df.columns[1:7]  # The next 6 columns with data
@@ -155,7 +155,6 @@ class PlotManager:
         plt.show()
 
 
-
 class SqliteManagerLite:
     def queryBuilder(self, query_type, table_name, queryVal1=None, queryVal2=None):
         if query_type.upper() == "CREATE TABLE":
@@ -177,15 +176,14 @@ class SqliteManagerLite:
 
 # Main
 
+tableName = "GlobalRadiativeForcing"
+headers = ["Year", "C02", "CH4", "N2O", "CFCs", "HCFCs", "HFCs"]
 numCols = 7
 startYear = 1979
 endYear = 2022
 numRows = endYear - startYear + 1
 years = [str(year) for year in range(startYear, endYear + 1)]
-tableName = "GlobalRadiativeForcing"
-
 totalCells = numCols * numRows
-headers = ["Year", "C02", "CH4", "N2O", "CFCs", "HCFCs", "HFCs"]
 
 sqliteManagerLite = SqliteManagerLite()
 
@@ -210,12 +208,9 @@ for year in years:
         nextData = float(result)
         dataInListForm.append(nextData)
 
-
 print(dataInListForm)
-        
 
-
-# Reshape the list into a 2D array with 44 rows and 7 columns
+# Reshape the list into a 2D array
 reshapedData = np.reshape(dataInListForm, (numRows, numCols))
 
 # Create the DataFrame
@@ -227,11 +222,8 @@ plotManager = PlotManager(df)
 print(plotManager)
 plotManager.linearRegressionPlot()
 
-print("Done")
-
-
-
-
 
 print("Closing client socket...")
 client.sock.close()
+
+print("Done")
