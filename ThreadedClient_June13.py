@@ -16,6 +16,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
+import _thread as thread, time
+import queue
+import threading
+
+
 class Client:
     def __init__(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -173,6 +178,19 @@ class SqliteManagerLite:
             raise ValueError(f"Unsupported query type: {query_type}")
         return query_string
 
+class DataRetrievalThread(threading.Thread):
+    def __init__(self, dataTupleIn):
+        threading.Thread.__init__(self)
+        self.dataTuple = dataTupleIn
+
+    def run(self):
+        rowIndex, colIndex, year, header = self.dataTuple
+        query = sqliteManagerLite.queryBuilder('WHERE', tableName, header, f"Year='{year}'")
+        print("Sending query: " + query)
+        result = client.sendMessage(query)
+        print("Received result:", result)
+        dataIn2DForm[rowIndex, colIndex] = float(result)
+
 
 # Main
 
@@ -192,26 +210,12 @@ print("Creating client...")
 client.connect()
 
 # Initialize an empty 2D array with dimensions numRows x numCols
+global dataIn2DForm
 dataIn2DForm = np.empty((numRows, numCols))
-
-'''
-# Create dictionaries for row and column indices
-yearToRowIndex = {year: index for index, year in enumerate(years)}
-headerToColIndex = {header: index for index, header in enumerate(headers)}
-
-# Create reverse dictionaries
-rowIndexToYear = {index: year for year, index in yearToRowIndex.items()}
-colIndexToHeader = {index: header for header, index in headerToColIndex.items()}
-
-print("Year to Row Index:", yearToRowIndex)
-print("Header to Column Index:", headerToColIndex)
-print("Row Index to Year:", rowIndexToYear)
-print("Column Index to Header:", colIndexToHeader)
-'''
 
 dataQueryQueue = []
 
-# Create queue
+# Create queue of data queries to be processed
 for rowIndex, year in enumerate(years):
     for colIndex, header in enumerate(headers):
         if header == "Year":
@@ -221,14 +225,26 @@ for rowIndex, year in enumerate(years):
 
 print(dataQueryQueue)
 
-for rowIndex, colIndex, year, header in dataQueryQueue:
-    query = sqliteManagerLite.queryBuilder('WHERE', tableName, header, f"Year='{year}'")
-    print("Sending query: " + query)
-    result = client.sendMessage(query)
-    print("Received result:", result)
-    dataIn2DForm[rowIndex, colIndex] = float(result)
+condition = threading.Condition()
+
+# Create a queue of threads to process the data
+threadQueue = queue.Queue()
+
+for dataTuple in dataQueryQueue:
+    thread = DataRetrievalThread(dataTuple)
+    threadQueue.put(thread)
+
+while not threadQueue.empty():
+    thread = threadQueue.get()
+    condition.acquire()
+    thread.start()
+    thread.join()
+    condition.notify()
+    condition.release()
 
 print(dataIn2DForm)
+
+
 
 # Create the DataFrame
 df = pd.DataFrame(dataIn2DForm, columns=headers)
