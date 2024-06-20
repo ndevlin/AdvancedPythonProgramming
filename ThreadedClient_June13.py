@@ -137,7 +137,7 @@ class PlotManager:
         plt.ylabel(y)
         plt.show()
 
-    def linearRegressionPlot(self, title=None):
+    def linearRegressionPlot(self, title=None, yLabel="Data Values"):
         x = self.df.columns[0]
         dataColumns = self.df.columns[1:7]
 
@@ -155,9 +155,9 @@ class PlotManager:
             # Plot the regression line
             plt.plot(self.df[x], yVals, label=f'Linear Regression {y}')
 
-        plt.title('Linear Regression by Year')
+        plt.title(title)
         plt.xlabel(x)
-        plt.ylabel('Data Values')
+        plt.ylabel(yLabel)
         plt.legend()
         plt.show()
 
@@ -262,7 +262,8 @@ print(df)
 
 plotManager = PlotManager(df)
 print(plotManager)
-plotManager.linearRegressionPlot()
+plotManager.linearRegressionPlot("Linear Regression of Global Radiative Forcing By Year", \
+                                 "Global Radiative Forcing (W m-2)")
 
 
 print("Closing client socket...")
