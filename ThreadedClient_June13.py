@@ -15,13 +15,13 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-
 import _thread as thread, time
 import queue
 import threading
 
 global condition
 condition = threading.Condition()
+
 
 class Client:
     def __init__(self):
@@ -138,12 +138,12 @@ class PlotManager:
         plt.show()
 
     def linearRegressionPlot(self, title=None):
-        x = self.df.columns[0]  # Year column
-        data_columns = self.df.columns[1:7]  # The next 6 columns with data
+        x = self.df.columns[0]
+        dataColumns = self.df.columns[1:7]
 
         plt.figure(figsize=(10, 6))  # Set figure size for better readability
 
-        for y in data_columns:
+        for y in dataColumns:
             if not title:
                 title = f'Linear Regression of {y} by {x}'
             # Calculate the linear regression (slope and intercept)
@@ -179,6 +179,7 @@ class SqliteManagerLite:
         else:
             raise ValueError(f"Unsupported query type: {query_type}")
         return query_string
+
 
 class DataRetrievalThread(threading.Thread):
     def __init__(self, dataTupleIn=None):
@@ -216,7 +217,6 @@ print("Creating client...")
 client.connect()
 
 # Initialize an empty 2D array with dimensions numRows x numCols
-global dataIn2DForm
 dataIn2DForm = np.empty((numRows, numCols))
 
 dataQueryQueue = []
@@ -253,8 +253,6 @@ while dataQueryQueue != []:
         result = currThread.result
         rowIndex, colIndex, year, header = currThread.dataTuple
         dataIn2DForm[rowIndex, colIndex] = result
-
-print(dataIn2DForm)
 
 
 # Create the DataFrame

@@ -23,7 +23,7 @@ class WebScraper():
 
     def requestWebPage(self, pageIn):
         html = urlopen(pageIn)
-        self.soup =  BeautifulSoup(html, "html.parser")
+        self.soup = BeautifulSoup(html, "html.parser")
 
     def webPageFromFile(self, fileName):
         try:
@@ -132,10 +132,8 @@ class Server:
         data = "placeholder"
         while data:
             data = self.conn.recv(1024)
-            print("Received data:", data)
             if data:
                 response = self.processQuery(data.decode('utf-8'))
-                print(f"Response:", response)
                 response = str(response[0][0])
                 print("Sending response:", response)
                 bytestream = ByteStream(data=response, isBinary=False)
@@ -200,12 +198,12 @@ headerTypes = ["INTEGER", "FLOAT", "FLOAT", "FLOAT", "FLOAT", "FLOAT", "FLOAT"]
 tableTupleData = "("
 for header, headerType in zip(headers, headerTypes):
     tableTupleData += header + " " + headerType + ", "
-tableTupleData = tableTupleData[:-2] + ")"
+tableTupleData = tableTupleData[:-2] + ")"      # Remove last comma and add closing parenthesis
 
 databaseName = "GlobalRadiativeForcing.db"
 tableName = databaseName.split(".")[0]
 
-
+# Will close database automatically after with block
 with SqliteManager(databaseName) as db:
 
     # Check if the table exists and delete it if it does
@@ -215,7 +213,7 @@ with SqliteManager(databaseName) as db:
     createTableQuery = db.queryBuilder('CREATE TABLE', tableName, tableTupleData)
     db.executeQuery(createTableQuery)
 
-    # Add data to the table
+    # Prepare data for the table
     listOfRows = []
     for i in range(0, len(webScraper.memberDict["td"]), numCols):
         listOfRows.append(webScraper.memberDict["td"][i:i+numCols])
