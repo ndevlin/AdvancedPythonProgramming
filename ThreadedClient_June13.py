@@ -20,6 +20,8 @@ import _thread as thread, time
 import queue
 import threading
 
+global condition
+condition = threading.Condition()
 
 class Client:
     def __init__(self):
@@ -179,17 +181,21 @@ class SqliteManagerLite:
         return query_string
 
 class DataRetrievalThread(threading.Thread):
-    def __init__(self, dataTupleIn):
+    def __init__(self, dataTupleIn=None):
         threading.Thread.__init__(self)
         self.dataTuple = dataTupleIn
+        self.result = None
 
     def run(self):
         rowIndex, colIndex, year, header = self.dataTuple
         query = sqliteManagerLite.queryBuilder('WHERE', tableName, header, f"Year='{year}'")
+        condition.acquire()
         print("Sending query: " + query)
         result = client.sendMessage(query)
         print("Received result:", result)
-        dataIn2DForm[rowIndex, colIndex] = float(result)
+        self.result = float(result)
+        condition.notify()
+        condition.release()
 
 
 # Main
@@ -225,25 +231,30 @@ for rowIndex, year in enumerate(years):
 
 print(dataQueryQueue)
 
-condition = threading.Condition()
-
 # Create a queue of threads to process the data
 threadQueue = queue.Queue()
 
-for dataTuple in dataQueryQueue:
-    thread = DataRetrievalThread(dataTuple)
-    threadQueue.put(thread)
+numThreads = 6
+agents = []
 
-while not threadQueue.empty():
-    thread = threadQueue.get()
-    condition.acquire()
-    thread.start()
-    thread.join()
-    condition.notify()
-    condition.release()
+while dataQueryQueue != []:
+    for i in range(numThreads):
+        agent = dataQueryQueue.pop(0)
+        agents.append(agent)
+    
+    for agent in agents:
+        thread = DataRetrievalThread(agent)
+        threadQueue.put(thread)
+
+    while not threadQueue.empty():
+        currThread = threadQueue.get()
+        currThread.start()
+        currThread.join()
+        result = currThread.result
+        rowIndex, colIndex, year, header = currThread.dataTuple
+        dataIn2DForm[rowIndex, colIndex] = result
 
 print(dataIn2DForm)
-
 
 
 # Create the DataFrame
