@@ -102,11 +102,25 @@ for i in range(0x20, 0x7F):
         cypher = TwoLayerCaesarCipher(j, i)
         decrypted = cypher.decrypt(textFromFile)
 
+        testNum = 40
+
         numSpaces = 0
+        numEs = 0
+        numAs = 0
+        numRs = 0
+        numIs = 0
         for char in decrypted:
             if char == " ":
                 numSpaces += 1
-        if numSpaces > 94:
+            if char == "e" or char == "E":
+                numEs += 1
+            if char == "a" or char == "A":
+                numAs += 1
+            if char == "r" or char == "R":
+                numRs += 1
+            if char == "i" or char == "I":
+                numIs += 1
+        if numSpaces > testNum and numEs > testNum and numAs > testNum and numRs > testNum and numIs > testNum:
             listOfDecryptedTexts.append(decrypted)
             print(decrypted)
             print(f"Initial Pos Layer 1: {j}", f"Initial Pos Layer 2: {i}")
