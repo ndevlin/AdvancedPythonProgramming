@@ -5,7 +5,7 @@ June 19 2024
 '''
 
 class Rotor:
-    def __init__(self, initialPosition=' ', incrementAmount=1, asciiBegin=0x20, asciiEnd=0x80):
+    def __init__(self, initialPosition=' ', incrementAmount=1, asciiBegin=0x20, asciiEnd=0x7F):
         self.asciiBegin = asciiBegin
         self.asciiEnd = asciiEnd
         self.initialPosition = ord(initialPosition)
@@ -75,7 +75,7 @@ class Rotor:
 
 
 class Rotor2:
-    def __init__(self, initialPosition=' ', incrementAmount=1, asciiBegin=0x20, asciiEnd=0x80):
+    def __init__(self, initialPosition=' ', incrementAmount=1, asciiBegin=0x20, asciiEnd=0x7F):
         self.asciiBegin = asciiBegin
         self.asciiEnd = asciiEnd
         self.initialPosition = ord(initialPosition)
@@ -145,24 +145,13 @@ class Rotor2:
 
 class Decryption:
     def __init__(self, text=" ", initialPosition1=" ", intitialPosition2=" ", incrementAmount=1):
-        self.text = text
-        self.encrypted = ""
+        self.encrypted = text
         self.decrypted = ""
         self.rotor1 = Rotor(initialPosition1, incrementAmount)
         self.rotor2 = Rotor2(intitialPosition2, incrementAmount)
 
-    def caesarCypher(self):
-        self.encrypted = ""
-        for char in self.text:
-            encryptedChar, didReset = self.rotor1.rotate(char)
-            encryptedChar = self.rotor2.rotate(encryptedChar, didReset)
-            self.encrypted += encryptedChar
-        return self.encrypted
-
     def decryptCaesarCypher(self):
         self.decrypted = ""
-        self.rotor1.reset()
-        self.rotor2.reset()
         for char in self.encrypted:
             decryptedChar, didReset = self.rotor1.reverseRotate(char)
             decryptedChar = self.rotor2.reverseRotate(decryptedChar, didReset)
@@ -172,13 +161,38 @@ class Decryption:
 
 # Main
 
-stringToEncrypt = "HELLO WORLDxyz+_)(*&^%$#@!{}~!"
-print("Encrypt", stringToEncrypt)
 
-decryption = Decryption(stringToEncrypt, "$")
-decryption.caesarCypher()
+# Assuming Decryption class and TwoLayerCaesarCipher are similar in functionality
+# and Decryption class has been properly defined elsewhere in Rotator2_Jun19.py
 
-print("Encrypted:", decryption.encrypted)
+# Main code to demonstrate brute force decryption attempt
+print("Brute Force Decryption Attempt:")
 
-print("Decrypted:", decryption.decryptCaesarCypher())
 
+textFromFile = ''
+filePath = 'TestEncryptedText.txt'
+with open(filePath, 'r') as file:
+    textFromFile = file.read()
+
+# Placeholder for decrypted texts that meet our criteria
+listOfDecryptedTexts = []
+
+# Iterate through all possible initial positions for the two rotors
+for i in range(0x20, 0x7F):
+    for j in range(0x20, 0x7F):
+        # Initialize Decryption with current rotor positions (i, j)
+        # Assuming Decryption class can be initialized with rotor positions, 
+        # if not, adjust according to the actual implementation
+        decryption_attempt = Decryption(textFromFile, chr(i), chr(j))
+        decrypted = decryption_attempt.decryptCaesarCypher()
+
+        numSpaces = 0
+        for char in decrypted:
+            if char == " ":
+                numSpaces += 1
+        
+        percentSpaces = numSpaces / len(decrypted) * 100
+
+        if percentSpaces > 3:
+            print("Decrypted Text:", decrypted)
+            print(f"Initial Pos Rotor 1: {i}, Initial Pos Rotor 2: {j}\n")

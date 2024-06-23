@@ -14,7 +14,7 @@ class TwoLayerCaesarCipher:
 
     def encrypt_character(self, char):
         # Encrypt with first layer
-        encrypted_char = chr(((ord(char) + self.current_pos_layer1) % 0x7F) % 0x7F + 0x20)
+        encrypted_char = chr(((ord(char) + self.current_pos_layer1) % 0x7F) % (0x7F + 0x20))
         self.current_pos_layer1 += 1
         if self.current_pos_layer1 > 0x7F:
             self.current_pos_layer1 = 0x20
@@ -23,7 +23,7 @@ class TwoLayerCaesarCipher:
                 self.current_pos_layer2 = 0x20
 
         # Encrypt with second layer
-        encrypted_char = chr(((ord(encrypted_char) + self.current_pos_layer2) % 0x7F) % 0x7F + 0x20)
+        encrypted_char = chr(((ord(encrypted_char) + self.current_pos_layer2) % 0x7F) % (0x7F + 0x20))
         return encrypted_char
 
     def encrypt(self, text):
@@ -59,7 +59,7 @@ class TwoLayerCaesarCipher:
 # Main code to demonstrate encryption and decryption
 if __name__ == "__main__":
     cipher = TwoLayerCaesarCipher()
-    original_text = "HELLO WORLD"
+    original_text = "HEllo Dig Dagitty WOrld!&%*()^#&(~+ )"
     print("Original:", original_text)
     encrypted_text = cipher.encrypt(original_text)
     print("Encrypted:", encrypted_text)
