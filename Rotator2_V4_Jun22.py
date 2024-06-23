@@ -117,7 +117,7 @@ class TwoLayerCaesarCipher:
         for char in text:
             if testRotor1.decrement():
                 testRotor2.decrement()
-        return testRotor1.currentPos, testRotor2.currentPos
+        return testRotor1.getPos(), testRotor2.getPos()
     
 # Main code to demonstrate encryption and decryption
 cypher = TwoLayerCaesarCipher()
@@ -139,8 +139,8 @@ print("\n")
 
 print("Brute Force Decryption: ")
 
-extFromFile = ''
-filePath = 'TestEncryptedText.txt'
+textFromFile = ''
+filePath = 'E2Rotor.txt'
 with open(filePath, 'r') as file:
     textFromFile = file.read()
 
@@ -151,13 +151,22 @@ characterPercentages = {" ": 16, "e": 10, "t": 7, "i": 6, "a": 6}
 
 listOfDecryptedTexts = []
 
+cypher = TwoLayerCaesarCipher(" ", " ")
+encrypted = cypher.encrypt(textFromFile)
+rotor1FinalPos = cypher.rotor1.getPos()
+print(f"{rotor1FinalPos = }")
+rotor2FinalPos = cypher.rotor2.getPos()
+print(f"{rotor2FinalPos = }")
+initialPositions = cypher.calculateInitialPositionsFromFinalPositions(encrypted, rotor1FinalPos, rotor2FinalPos)
+print(f"{initialPositions = }")
 
-for i in range(ord(" "), ord("!")):
-    for j in range(ord(" "), ord("!")):
+
+for i in range(ord(" "), 127):
+    for j in range(ord(" "), 127):
         cypher = TwoLayerCaesarCipher(i, j)
         decrypted = cypher.decrypt(textFromFile)
 
-        multiplier = 0.9
+        multiplier = 0.15
 
         numSpaces = 0
         numEs = 0
@@ -184,10 +193,18 @@ for i in range(ord(" "), ord("!")):
                         if numAs > 70 * multiplier:
                             pastThreshold = True
 
-        if True:
+        if pastThreshold:
             listOfDecryptedTexts.append(decrypted)
             print(decrypted)
             print(f"Pos Layer 1: {j}", f"Pos Layer 2: {i}")
+            rotor1FinalPos = cypher.rotor1.getPos()
+
+            print(f"{rotor1FinalPos = }")
+            rotor2FinalPos = cypher.rotor2.getPos()
+            print(f"{rotor2FinalPos = }")
+            initialPositions = cypher.calculateInitialPositionsFromFinalPositions(encrypted, rotor1FinalPos, rotor2FinalPos)
+            print(f"{initialPositions = }")
+
             print("\n")
 
 
