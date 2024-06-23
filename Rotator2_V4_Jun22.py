@@ -5,51 +5,62 @@ June 21 2024
 '''
 
 class Rotor:
-    def __init__(self, initialPosLayer=1):
-        self.currentPosLayer = initialPosLayer
+    def __init__(self, initialPos=" "):
+        self.currentPos = self.convertCharToNum(initialPos)
     
-    def reset(self, resetPos=1):
-        self.currentPosLayer = resetPos
+    # For simplicity, assign valid characters to numbers 1-95
+    def convertCharToNum(self, char):
+        if type(char) != str:
+            return char
+        return ord(char) - 31
+    
+    def convertNumToChar(self, num):
+        if type(num) != int:
+            return num
+        return chr(num + 31)
+
+    def reset(self, resetPos=" "):
+        self.currentPos = self.convertCharToNum(resetPos)
     
     def encryptChar(self, char):
         if char == "\n":
             return "\n"
-        ordChar = ord(char) - 31
-        encryptedChar = ordChar + self.currentPosLayer
+        ordChar = self.convertCharToNum(char)
+        encryptedChar = ordChar + self.currentPos
         if encryptedChar > 95:
             encryptedChar = encryptedChar % 96
             encryptedChar = encryptedChar + 1
-        newChar = chr(encryptedChar + 31)
+        newChar = self.convertNumToChar(encryptedChar)
         return newChar
     
     # Returns True if it has looped back to the beginning, False otherwise
     def increment(self):
-        self.currentPosLayer += 1
-        if self.currentPosLayer > 95:
-            self.currentPosLayer = 1
+        self.currentPos += 1
+        if self.currentPos > 95:
+            self.currentPos = 1
             return True
         return False
     
     def decryptChar(self, char):
         if char == "\n":
             return "\n"
-        ordChar = ord(char) - 31
-        decryptedChar = ordChar - self.currentPosLayer
+        ordChar = self.convertCharToNum(char)
+        decryptedChar = ordChar - self.currentPos
         if decryptedChar < 1:
             decryptedChar = decryptedChar + 95
-        newChar = chr(decryptedChar + 31)
+        newChar = self.convertNumToChar(decryptedChar)
         return newChar
     
     # Returns True if it has looped back to the end, False otherwise
     def decrement(self):
-        self.currentPosLayer -= 1
-        if self.currentPosLayer < 1:
-            self.currentPosLayer = 95
+        self.currentPos -= 1
+        if self.currentPos < 1:
+            self.currentPos = 95
             return True
         return False
 
 class TwoLayerCaesarCipher:
-    def __init__(self, initialPosLayer1=1, initialPosLayer2=1):
+    def __init__(self, initialPosLayer1=" ", initialPosLayer2=" "):
         self.initialPosLayer1 = initialPosLayer1
         self.rotor1 = Rotor(initialPosLayer1)
         self.initialPosLayer2 = initialPosLayer2
