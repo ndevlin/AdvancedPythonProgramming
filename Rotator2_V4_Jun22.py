@@ -168,7 +168,7 @@ print("\n")
 print("Attempt to decrypt with default values: ")
 
 e2Rotor = ''
-filePath = 'TestEncryptedText.txt'
+filePath = 'E2Rotor.txt'
 with open(filePath, 'r') as file:
     e2Rotor = file.read()
 
@@ -203,50 +203,52 @@ print(f"{initialPositions = }")
 print("\n")
 print("Brute Force Decryption: ")
 
-charPercent = {" ": 0.1, "e": 0.1, "a": 0.08}
+lastMatch = 0
 
 if True:
     print("Start Brute Force Decryption")
     for i in range(ord(" "), ord("~") + 1):
         for j in range(ord(" "), ord("~") + 1):
-            cypher3 = TwoLayerCaesarCipher(i, j)
-            decrypted3 = cypher3.decrypt(e2Rotor)
-
-            multiplier = .8
+            cypher4 = TwoLayerCaesarCipher(i, j)
+            decrypted4 = cypher4.decrypt(e2Rotor)
 
             numSpaces = 0
             numEs = 0
             numAs = 0
+            numRs = 0
+            numIs = 0
 
-            for char in decrypted3:
+            for char in decrypted4:
                 if char == " ":
                     numSpaces += 1
                 if char == "e":
                     numEs += 1
                 if char == "a":
                     numAs += 1
+                if char == "r":
+                    numRs += 1
+                if char == "i":
+                    numIs += 1
 
-            pastThreshold = True
+            percentSpaces = numSpaces / numChars
+            percentEs = numEs / numChars
+            percentAs = numAs / numChars
+            percentRs = numRs / numChars
+            percentIs = numIs / numChars
+            percentMatch = percentSpaces + percentEs + percentAs + percentRs + percentIs
 
-            for char in charPercent:
-                if char == " ":
-                    if numSpaces < numChars * charPercent[char] * multiplier:
-                        pastThreshold = False
-                if char == "e":
-                    if numEs < numChars * charPercent[char] * multiplier:
-                        pastThreshold = False
-                if char == "a":
-                    if numAs < numChars * charPercent[char] * multiplier:
-                        pastThreshold = False
+            threshold = 0.1
 
-            if pastThreshold:
-                print(decrypted3)
+            if percentMatch > threshold and percentMatch > lastMatch:
+                print(f"{percentMatch = }")
+                lastMatch = percentMatch
+                print(decrypted4)
                 print(f"Pos Layer 1: {j}", f"Pos Layer 2: {i}")
-                rotor1FinalPos = cypher.rotor1.getPos()
+                rotor1FinalPos = cypher4.rotor1.getPos()
                 print(f"{rotor1FinalPos = }")
-                rotor2FinalPos = cypher.rotor2.getPos()
+                rotor2FinalPos = cypher4.rotor2.getPos()
                 print(f"{rotor2FinalPos = }")
-                initialPositions = cypher.calculateInitialPositionsFromFinalPositions(encrypted, rotor1FinalPos, rotor2FinalPos)
+                initialPositions = cypher4.calculateInitialPositionsFromFinalPositions(decrypted4, rotor1FinalPos, rotor2FinalPos)
                 print(f"{initialPositions = }")
 
                 print("\n")
