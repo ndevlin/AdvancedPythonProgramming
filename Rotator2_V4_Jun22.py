@@ -9,15 +9,19 @@ class Rotor:
         self.currentPos = self.convertCharToNum(initialPos)
     
     # For simplicity, assign valid characters to numbers 1-95
+    # Valid chars are considered to be the ASCII characters between " " and "~"
     def convertCharToNum(self, char):
         if type(char) != str:
-            return char
+            return char - 31
         return ord(char) - 31
     
     def convertNumToChar(self, num):
         if type(num) != int:
-            return num
+            return num + 31
         return chr(num + 31)
+
+    def getPos(self):
+        return self.convertNumToChar(self.currentPos)
 
     def reset(self, resetPos=" "):
         self.currentPos = self.convertCharToNum(resetPos)
@@ -90,54 +94,66 @@ class TwoLayerCaesarCipher:
         decryptedChar = self.rotor2.decryptChar(decryptedChar)
         return decryptedChar
     
-    def decrypt(self, text):
-        # First reverse the order of the text
-        text = text[::-1]
+    def decrypt(self, text, previouslyEncrypted=False):
+        if previouslyEncrypted:
+            # First reverse the order of the text
+            text = text[::-1]
+        else:
+            # Account for the first step of decryption being decrementation
+            if self.rotor1.increment():
+                self.rotor2.increment()
         result = ""
         for char in text:
             result += self.decryptCharacter(char)
-        # Un-reverse the text
-        result = result[::-1]
+        if previouslyEncrypted:
+            # Un-reverse the text
+            result = result[::-1]
         self.reset()
         return result
     
+    def calculateInitialPositionsFromFinalPositions(self, text, finalPosLayer1, finalPosLayer2):
+        testRotor1 = Rotor(finalPosLayer1)
+        testRotor2 = Rotor(finalPosLayer2)
+        for char in text:
+            if testRotor1.decrement():
+                testRotor2.decrement()
+        return testRotor1.currentPos, testRotor2.currentPos
+    
 # Main code to demonstrate encryption and decryption
 cypher = TwoLayerCaesarCipher()
-text = "Hello, World!~ *#}!"
+#text = "Hello, World!~ *#}!"
+text = "Alan Turing"
 print(f"Original: {text}")
 encrypted = cypher.encrypt(text)
 print(f"Encrypted: {encrypted}")
-decrypted = cypher.decrypt(encrypted)
+rotor1FinalPos = cypher.rotor1.getPos()
+print(f"{rotor1FinalPos = }")
+rotor2FinalPos = cypher.rotor2.getPos()
+print(f"{rotor2FinalPos = }")
+initialPositions = cypher.calculateInitialPositionsFromFinalPositions(encrypted, rotor1FinalPos, rotor2FinalPos)
+print(f"{initialPositions = }")
+decrypted = cypher.decrypt(encrypted, previouslyEncrypted=True)
 print(f"Decrypted: {decrypted}")
-
-textFromFile = ''
-filePath = 'TestEncryptedText.txt'
-with open(filePath, 'r') as file:
-    textFromFile = file.read()
-
-
-newTextFromFile = ""
-for char in textFromFile:
-    if char != "\n":
-        newTextFromFile += char
-textFromFile = newTextFromFile
-
-numChars = len(textFromFile)
-print(f"{numChars = }")
-
-print(f"{len(textFromFile) = }")
 
 print("\n")
 
 print("Brute Force Decryption: ")
+
+extFromFile = ''
+filePath = 'TestEncryptedText.txt'
+with open(filePath, 'r') as file:
+    textFromFile = file.read()
+
+numChars = len(textFromFile)
+print(f"{numChars = }")
 
 characterPercentages = {" ": 16, "e": 10, "t": 7, "i": 6, "a": 6}
 
 listOfDecryptedTexts = []
 
 
-for i in range(1, 96):
-    for j in range(1, 96):
+for i in range(ord(" "), ord("!")):
+    for j in range(ord(" "), ord("!")):
         cypher = TwoLayerCaesarCipher(i, j)
         decrypted = cypher.decrypt(textFromFile)
 
@@ -168,12 +184,10 @@ for i in range(1, 96):
                         if numAs > 70 * multiplier:
                             pastThreshold = True
 
-        testText = "Alan Turing, an English mathematician, logician, and cryptanalyst, was a computer pioneer."
-
-        if pastThreshold:
+        if True:
             listOfDecryptedTexts.append(decrypted)
             print(decrypted)
-            print(f"Initial Pos Layer 1: {j}", f"Initial Pos Layer 2: {i}")
+            print(f"Pos Layer 1: {j}", f"Pos Layer 2: {i}")
             print("\n")
 
 
