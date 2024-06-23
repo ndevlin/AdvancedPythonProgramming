@@ -94,20 +94,14 @@ class TwoLayerCaesarCipher:
         decryptedChar = self.rotor2.decryptChar(decryptedChar)
         return decryptedChar
     
-    def decrypt(self, text, previouslyEncrypted=False):
-        if previouslyEncrypted:
-            # First reverse the order of the text
-            text = text[::-1]
-        else:
-            # Account for the first step of decryption being decrementation
-            if self.rotor1.increment():
-                self.rotor2.increment()
+    def decrypt(self, text):
+        # First reverse the order of the text
+        text = text[::-1]
         result = ""
         for char in text:
             result += self.decryptCharacter(char)
-        if previouslyEncrypted:
-            # Un-reverse the text
-            result = result[::-1]
+        # Un-reverse the text
+        result = result[::-1]
         self.reset()
         return result
     
@@ -121,8 +115,8 @@ class TwoLayerCaesarCipher:
     
 # Main code to demonstrate encryption and decryption
 cypher = TwoLayerCaesarCipher()
-#text = "Hello, World!~ *#}!"
-text = "Alan Turing"
+text = "Hello, World!~ *#}!"
+#text = "Alan Turing, an English mathematician, logician, and cryptanalyst, was a computer pioneer. Often remembered for his contributions to the fields of artificial intelligence and modern computer science before either even existed, Turing is probably best known for what is now dubbed the Turing Test. It is a process of testing a machines ability to think. The basic premise of the Turing Test is that a human judge would be placed in isolation and have two conversations - one with a computer and one with another person - except the judge wouldn’t be told which was which. If the computer could fool the judge and carry on a conversation that is indistinguishable from that of the human, the computer is said to have passed the Turing Test. Less is known, however, about Turing’s intelligence work during WWII when he used his mathematical and cryptologic skills to help break one of the most difficult of German ciphers, ENIGMA. ENIGMA was a cipher machine—each keystroke replaced a character in the message with another character determined by the machine’s rotor settings and wiring arrangements that were previously established between the sender and the receiver."
 print(f"Original: {text}")
 encrypted = cypher.encrypt(text)
 print(f"Encrypted: {encrypted}")
@@ -132,80 +126,130 @@ rotor2FinalPos = cypher.rotor2.getPos()
 print(f"{rotor2FinalPos = }")
 initialPositions = cypher.calculateInitialPositionsFromFinalPositions(encrypted, rotor1FinalPos, rotor2FinalPos)
 print(f"{initialPositions = }")
-decrypted = cypher.decrypt(encrypted, previouslyEncrypted=True)
+decrypted = cypher.decrypt(encrypted)
 print(f"Decrypted: {decrypted}")
 
-print("\n")
 
-print("Brute Force Decryption: ")
+
+# Enryption and Decryption appears to work with the text. Something seems off with the E2Rotor.txt file
+print("\n")
+print("Test Read from File: ")
 
 textFromFile = ''
-filePath = 'E2Rotor.txt'
+filePath = 'TestEncryptedText.txt'
 with open(filePath, 'r') as file:
     textFromFile = file.read()
 
 numChars = len(textFromFile)
 print(f"{numChars = }")
 
-characterPercentages = {" ": 16, "e": 10, "t": 7, "i": 6, "a": 6}
+with open("TestEncryptedTextOriginalUnEncrypted.txt", 'r') as file:
+    unEncrypted = file.read()
 
-listOfDecryptedTexts = []
+print(f"Original: {unEncrypted}")
 
-cypher = TwoLayerCaesarCipher(" ", " ")
-encrypted = cypher.encrypt(textFromFile)
-rotor1FinalPos = cypher.rotor1.getPos()
+cypher2 = TwoLayerCaesarCipher(" ", " ")
+encrypted2 = cypher2.encrypt(unEncrypted)
+rotor1FinalPos = cypher2.rotor1.getPos()
+print(f"Encrypted: {encrypted2}")
 print(f"{rotor1FinalPos = }")
-rotor2FinalPos = cypher.rotor2.getPos()
+rotor2FinalPos = cypher2.rotor2.getPos()
 print(f"{rotor2FinalPos = }")
-initialPositions = cypher.calculateInitialPositionsFromFinalPositions(encrypted, rotor1FinalPos, rotor2FinalPos)
+initialPositions = cypher.calculateInitialPositionsFromFinalPositions(encrypted2, rotor1FinalPos, rotor2FinalPos)
+print(f"{initialPositions = }")
+
+cypher2 = TwoLayerCaesarCipher(">", ",")
+decrypted2 = cypher2.decrypt(textFromFile)
+print(f"Decrypted: {decrypted2}")
+
+
+
+print("\n")
+print("Attempt to decrypt with default values: ")
+
+e2Rotor = ''
+filePath = 'TestEncryptedText.txt'
+with open(filePath, 'r') as file:
+    e2Rotor = file.read()
+
+numChars = len(e2Rotor)
+print(f"{numChars = }")
+print(f"Original: {e2Rotor}")
+
+
+# Use a dummy Cypher using the same number of characters as the encrypted text to calculate the ending postions of the rotors
+dummyCypher = TwoLayerCaesarCipher(" ", " ")
+dummyEncrypted = dummyCypher.encrypt(e2Rotor)
+rotor1FinalPos = dummyCypher.rotor1.getPos()
+print(f"{rotor1FinalPos = }")
+rotor2FinalPos = dummyCypher.rotor2.getPos()
+print(f"{rotor2FinalPos = }")
+initialPositions = dummyCypher.calculateInitialPositionsFromFinalPositions(dummyEncrypted, rotor1FinalPos, rotor2FinalPos)
 print(f"{initialPositions = }")
 
 
-for i in range(ord(" "), 127):
-    for j in range(ord(" "), 127):
-        cypher = TwoLayerCaesarCipher(i, j)
-        decrypted = cypher.decrypt(textFromFile)
+cypher3 = TwoLayerCaesarCipher(rotor1FinalPos, rotor2FinalPos)
+decrypted3 = cypher3.decrypt(e2Rotor)
+rotor1FinalPos = cypher3.rotor1.getPos()
+print(f"Decrypted: {decrypted3}")
+print(f"{rotor1FinalPos = }")
+rotor2FinalPos = cypher3.rotor2.getPos()
+print(f"{rotor2FinalPos = }")
+initialPositions = cypher3.calculateInitialPositionsFromFinalPositions(dummyEncrypted, rotor1FinalPos, rotor2FinalPos)
+print(f"{initialPositions = }")
 
-        multiplier = 0.15
 
-        numSpaces = 0
-        numEs = 0
-        numTs = 0
-        numIs = 0
-        numAs = 0
-        for char in decrypted:
-            if char == " ":
-                numSpaces += 1
-            if char == "e":
-                numEs += 1
-            if char == "t":
-                numTs += 1
-            if char == "i":
-                numIs += 1
-            if char == "a":
-                numAs += 1
-        pastThreshold = False
 
-        if numSpaces > 188 * multiplier:
-            if numEs > 118 * multiplier:
-                if numTs > 82 * multiplier:
-                    if numIs > 74 * multiplier:
-                        if numAs > 70 * multiplier:
-                            pastThreshold = True
+print("\n")
+print("Brute Force Decryption: ")
 
-        if pastThreshold:
-            listOfDecryptedTexts.append(decrypted)
-            print(decrypted)
-            print(f"Pos Layer 1: {j}", f"Pos Layer 2: {i}")
-            rotor1FinalPos = cypher.rotor1.getPos()
+charPercent = {" ": 0.1, "e": 0.1, "a": 0.08}
 
-            print(f"{rotor1FinalPos = }")
-            rotor2FinalPos = cypher.rotor2.getPos()
-            print(f"{rotor2FinalPos = }")
-            initialPositions = cypher.calculateInitialPositionsFromFinalPositions(encrypted, rotor1FinalPos, rotor2FinalPos)
-            print(f"{initialPositions = }")
+if True:
+    print("Start Brute Force Decryption")
+    for i in range(ord(" "), ord("~") + 1):
+        for j in range(ord(" "), ord("~") + 1):
+            cypher3 = TwoLayerCaesarCipher(i, j)
+            decrypted3 = cypher3.decrypt(e2Rotor)
 
-            print("\n")
+            multiplier = .8
+
+            numSpaces = 0
+            numEs = 0
+            numAs = 0
+
+            for char in decrypted3:
+                if char == " ":
+                    numSpaces += 1
+                if char == "e":
+                    numEs += 1
+                if char == "a":
+                    numAs += 1
+
+            pastThreshold = True
+
+            for char in charPercent:
+                if char == " ":
+                    if numSpaces < numChars * charPercent[char] * multiplier:
+                        pastThreshold = False
+                if char == "e":
+                    if numEs < numChars * charPercent[char] * multiplier:
+                        pastThreshold = False
+                if char == "a":
+                    if numAs < numChars * charPercent[char] * multiplier:
+                        pastThreshold = False
+
+            if pastThreshold:
+                print(decrypted3)
+                print(f"Pos Layer 1: {j}", f"Pos Layer 2: {i}")
+                rotor1FinalPos = cypher.rotor1.getPos()
+                print(f"{rotor1FinalPos = }")
+                rotor2FinalPos = cypher.rotor2.getPos()
+                print(f"{rotor2FinalPos = }")
+                initialPositions = cypher.calculateInitialPositionsFromFinalPositions(encrypted, rotor1FinalPos, rotor2FinalPos)
+                print(f"{initialPositions = }")
+
+                print("\n")
 
 
 
