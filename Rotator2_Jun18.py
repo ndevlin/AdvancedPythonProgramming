@@ -1,8 +1,10 @@
 '''
 Nathan Devlin
-Rotator 2 V4
-June 21 2024
+Rotator 2
+June 18 2024
 '''
+
+from time import sleep
 
 class Rotor:
     def __init__(self, initialPos=" "):
@@ -63,7 +65,8 @@ class Rotor:
             return True
         return False
 
-class TwoLayerCaesarCipher:
+
+class TwoLayerCaesarCypher:
     def __init__(self, initialPosLayer1=" ", initialPosLayer2=" "):
         self.initialPosLayer1 = initialPosLayer1
         self.rotor1 = Rotor(initialPosLayer1)
@@ -113,10 +116,10 @@ class TwoLayerCaesarCipher:
                 testRotor2.decrement()
         return testRotor1.getPos(), testRotor2.getPos()
     
+
 # Main code to demonstrate encryption and decryption
-cypher = TwoLayerCaesarCipher()
+cypher = TwoLayerCaesarCypher()
 text = "Hello, World!~ *#}!"
-#text = "Alan Turing, an English mathematician, logician, and cryptanalyst, was a computer pioneer. Often remembered for his contributions to the fields of artificial intelligence and modern computer science before either even existed, Turing is probably best known for what is now dubbed the Turing Test. It is a process of testing a machines ability to think. The basic premise of the Turing Test is that a human judge would be placed in isolation and have two conversations - one with a computer and one with another person - except the judge wouldn’t be told which was which. If the computer could fool the judge and carry on a conversation that is indistinguishable from that of the human, the computer is said to have passed the Turing Test. Less is known, however, about Turing’s intelligence work during WWII when he used his mathematical and cryptologic skills to help break one of the most difficult of German ciphers, ENIGMA. ENIGMA was a cipher machine—each keystroke replaced a character in the message with another character determined by the machine’s rotor settings and wiring arrangements that were previously established between the sender and the receiver."
 print(f"Original: {text}")
 encrypted = cypher.encrypt(text)
 print(f"Encrypted: {encrypted}")
@@ -130,10 +133,14 @@ decrypted = cypher.decrypt(encrypted)
 print(f"Decrypted: {decrypted}")
 
 
-
+# Test decrypt text from a file
 # Enryption and Decryption appears to work with the text. Something seems off with the E2Rotor.txt file
 print("\n")
 print("Test Read from File: ")
+
+unEncrypted = ''
+with open("TestEncryptedTextOriginalUnEncrypted.txt", 'r') as file:
+    unEncrypted = file.read()
 
 textFromFile = ''
 filePath = 'TestEncryptedText.txt'
@@ -143,29 +150,36 @@ with open(filePath, 'r') as file:
 numChars = len(textFromFile)
 print(f"{numChars = }")
 
-with open("TestEncryptedTextOriginalUnEncrypted.txt", 'r') as file:
-    unEncrypted = file.read()
-
+print("\n")
 print(f"Original: {unEncrypted}")
 
-cypher2 = TwoLayerCaesarCipher(" ", " ")
+cypher2 = TwoLayerCaesarCypher(" ", " ")
 encrypted2 = cypher2.encrypt(unEncrypted)
 rotor1FinalPos = cypher2.rotor1.getPos()
+
+print("\n")
 print(f"Encrypted: {encrypted2}")
+print("\n")
+
 print(f"{rotor1FinalPos = }")
 rotor2FinalPos = cypher2.rotor2.getPos()
 print(f"{rotor2FinalPos = }")
 initialPositions = cypher.calculateInitialPositionsFromFinalPositions(encrypted2, rotor1FinalPos, rotor2FinalPos)
 print(f"{initialPositions = }")
+print("\n")
 
-cypher2 = TwoLayerCaesarCipher(">", ",")
+# We are reading from TestEncryptedText.txt, which is the encrypted version of TestEncryptedTextOriginalUnEncrypted.txt
+# This appears to work almost flawlessly
+cypher2 = TwoLayerCaesarCypher(chr(ord(rotor1FinalPos) - 1), rotor2FinalPos)
 decrypted2 = cypher2.decrypt(textFromFile)
 print(f"Decrypted: {decrypted2}")
 
 
 
 print("\n")
+print("Use E2Rotor.txt: ")
 print("Attempt to decrypt with default values: ")
+print("\n")
 
 e2Rotor = ''
 filePath = 'E2Rotor.txt'
@@ -174,11 +188,12 @@ with open(filePath, 'r') as file:
 
 numChars = len(e2Rotor)
 print(f"{numChars = }")
+print("\n")
 print(f"Original: {e2Rotor}")
-
+print("\n")
 
 # Use a dummy Cypher using the same number of characters as the encrypted text to calculate the ending postions of the rotors
-dummyCypher = TwoLayerCaesarCipher(" ", " ")
+dummyCypher = TwoLayerCaesarCypher(" ", " ")
 dummyEncrypted = dummyCypher.encrypt(e2Rotor)
 rotor1FinalPos = dummyCypher.rotor1.getPos()
 print(f"{rotor1FinalPos = }")
@@ -186,20 +201,24 @@ rotor2FinalPos = dummyCypher.rotor2.getPos()
 print(f"{rotor2FinalPos = }")
 initialPositions = dummyCypher.calculateInitialPositionsFromFinalPositions(dummyEncrypted, rotor1FinalPos, rotor2FinalPos)
 print(f"{initialPositions = }")
+print("\n")
 
-
-cypher3 = TwoLayerCaesarCipher(rotor1FinalPos, rotor2FinalPos)
+cypher3 = TwoLayerCaesarCypher(rotor1FinalPos, rotor2FinalPos)
 decrypted3 = cypher3.decrypt(e2Rotor)
 rotor1FinalPos = cypher3.rotor1.getPos()
 print(f"Decrypted: {decrypted3}")
+
+print("\n")
 print(f"{rotor1FinalPos = }")
 rotor2FinalPos = cypher3.rotor2.getPos()
 print(f"{rotor2FinalPos = }")
 initialPositions = cypher3.calculateInitialPositionsFromFinalPositions(dummyEncrypted, rotor1FinalPos, rotor2FinalPos)
 print(f"{initialPositions = }")
+# We successfully decrypt "Alan Turing at the start of the file. It seems something else has gone awry with the E2Rotor.txt file after that"
 
+sleep(2)
 
-
+print("\n")
 print("\n")
 print("Brute Force Decryption: ")
 
@@ -209,7 +228,7 @@ if True:
     print("Start Brute Force Decryption")
     for i in range(ord(" "), ord("~") + 1):
         for j in range(ord(" "), ord("~") + 1):
-            cypher4 = TwoLayerCaesarCipher(i, j)
+            cypher4 = TwoLayerCaesarCypher(i, j)
             decrypted4 = cypher4.decrypt(e2Rotor)
 
             numSpaces = 0
@@ -253,6 +272,6 @@ if True:
 
                 print("\n")
 
-
+# The closest match is the last one to be printed. The final rotor positions and initial rotor positions are printed as well
 
 
